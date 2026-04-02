@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Register from "./pages/auth/Register";
 import Loader from "./components/Loader";
 import Login from "./pages/auth/Login";
+import Landing from "./pages/Landing";
 
 function App() {
   // if (isCheckingAuth && !authUser)
@@ -18,6 +19,7 @@ function App() {
         <Routes>
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Landing />} />
         </Routes>
       </BrowserRouter>
     </>
