@@ -1,4 +1,5 @@
 import { Link, NavLink } from "react-router-dom";
+import logo from "../../assets/logo.png";
 
 const navItemClass = ({ isActive }) =>
   [
@@ -14,9 +15,9 @@ export default function Topbar() {
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-2.5 lg:px-7">
         <Link
           to="/"
-          className="text-[29px] font-bold leading-none tracking-tight text-emerald-800"
+          className="inline-flex items-center"
         >
-          HaatBazar
+          <img src={logo} alt="HaatBazar" className="h-10 w-auto" />
         </Link>
 
         <nav
