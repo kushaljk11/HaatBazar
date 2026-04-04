@@ -81,7 +81,7 @@ export default function Landing() {
               </button>
             </div>
 
-            <div className="mx-auto h-[320px] w-full max-w-[420px] overflow-hidden rounded-3xl border-4 border-stone-900/10 shadow-2xl sm:h-[380px] sm:max-w-[460px] lg:h-[430px]">
+            <div className="mx-auto h-[360px] w-full max-w-[480px] overflow-hidden rounded-3xl border-4 border-stone-900/10 shadow-2xl sm:h-[430px] sm:max-w-[560px] lg:h-[520px]">
               <img
                 src={heroImage}
                 alt="Fresh local produce"

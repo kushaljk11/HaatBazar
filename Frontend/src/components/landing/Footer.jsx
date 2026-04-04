@@ -16,7 +16,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-white border-t border-emerald-600 font-emerald text-emerald-900">
-      <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 sm:px-10 lg:grid-cols-4 lg:gap-10">
+      <div className="mx-auto grid max-w-7xl gap-6 px-6 py-16 sm:px-10 lg:grid-cols-4 lg:gap-10">
         <div>
           <div className="inline-flex items-center text-2xl font-semibold">
             HaatBazar
@@ -128,7 +128,7 @@ export default function Footer() {
       <div className="border-t border-emerald-600">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-7 text-sm text-emerald-800/80 sm:flex-row sm:items-center sm:justify-between sm:px-10">
           <p>&copy; {new Date().getFullYear()} HaatBazar. All rights reserved.</p>
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
             <a href="#" className="transition hover:text-emerald-900">
               Privacy Policy
             </a>
