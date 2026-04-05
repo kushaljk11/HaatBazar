@@ -4,9 +4,17 @@ import { useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
+const getRoleRedirectPath = (role) => {
+  const normalized = String(role || "").toLowerCase();
+
+  if (normalized === "buyer") return "/buyer/dashboard";
+
+  // Until dedicated farmer/admin dashboards are added, keep safe fallback.
+  return "/aboutus";
+};
+
 export default function Login() {
   const navigate = useNavigate();
-  const [success, setSuccess] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -19,16 +27,21 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       const response = await api.post("/login", formData);
-      console.log("Login successful:", response.data);
-      setSuccess("Login successful! Redirecting...");
-      toast.success("Login successful! Redirecting...");
-      setTimeout(() => {
-        // aile ko lagi about us ma redirect garne
-        navigate("/aboutus");
-      }, 2000);
 
+      const { token, user } = response.data || {};
+      const redirectPath = getRoleRedirectPath(user?.role);
+
+      if (token) localStorage.setItem("token", token);
+      if (user) localStorage.setItem("user", JSON.stringify(user));
+
+      toast.success("Login successful! Redirecting...");
+
+      setTimeout(() => {
+        navigate(redirectPath);
+      }, 2000);
     } catch (error) {
       toast.error(
         error.response && error.response.data
@@ -41,16 +54,18 @@ export default function Login() {
       );
     }
   };
-  <Toaster
-    position="top-center"
-    toastOptions={{
-      className: "bg-green-500 text-white",
-      duration: 3000,
-    }}
-  />;
 
   return (
-    <main className="min-h-screen bg-stone-100 md:grid md:h-screen md:grid-cols-2 md:overflow-hidden">
+    <>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          className: "bg-green-500 text-white",
+          duration: 3000,
+        }}
+      />
+
+      <main className="min-h-screen bg-stone-100 md:grid md:h-screen md:grid-cols-2 md:overflow-hidden">
       <section className="relative hidden h-screen md:block">
         <img src={login} alt="Login" className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
@@ -106,7 +121,7 @@ export default function Login() {
               <div className="h-px flex-1 bg-stone-200" />
             </div>
 
-            <form className="mt-7 space-y-5">
+            <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
               <div>
                 <label className="text-sm font-semibold text-stone-700">
                   Email Address
@@ -159,7 +174,6 @@ export default function Login() {
               <button
                 type="submit"
                 className="w-full rounded-full bg-emerald-900 px-5 py-3 text-base font-semibold text-white shadow-md transition hover:bg-emerald-800"
-                onClick={handleSubmit}
               >
                 Login into Account →
               </button>
@@ -169,6 +183,7 @@ export default function Login() {
               Don&apos;t have an account?{" "}
               <button
                 type="button"
+                onClick={() => navigate("/register")}
                 className="font-semibold text-emerald-900 hover:text-emerald-800"
               >
                 Register as a Farmer or Buyer
@@ -177,6 +192,7 @@ export default function Login() {
           </div>
         </div>
       </section>
-    </main>
+      </main>
+    </>
   );
 }
