@@ -33,23 +33,15 @@ export const registerUser = async (req, res) => {
       primaryCrop,
     } = req.body;
 
-    const normalizedRole = String(role || "").trim().toLowerCase();
-    const normalizedGender = String(gender || "").trim().toLowerCase();
-    const normalizedPrimaryCrop = String(
-      primaryCrop || (normalizedRole === "buyer" ? "other" : "")
-    )
-      .trim()
-      .toLowerCase();
-
     if (
       !name ||
       !email ||
       !password ||
-      !normalizedRole ||
+      !role ||
       !phone ||
       !location ||
-      !normalizedGender ||
-      !normalizedPrimaryCrop
+      !gender ||
+      !primaryCrop
     ) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -62,13 +54,13 @@ export const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({
       name,
-      email: String(email).trim().toLowerCase(),
+      email,
       password: hashedPassword,
-      role: normalizedRole,
+      role,
       phone,
       location,
-      gender: normalizedGender,
-      primaryCrop: normalizedPrimaryCrop,
+      gender,
+      primaryCrop,
     });
 
     await user.save();

@@ -13,7 +13,7 @@ export default function Register() {
     phone: "",
     location: "",
     gender: "male",
-    primaryCrop: "grains",
+    primaryCrop: "grains, vegetables, fruits, other",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -25,7 +25,7 @@ export default function Register() {
       ...prev,
       role: type,
       // Buyer does not select crop on UI, so keep a valid fallback for backend validation.
-      primaryCrop: type === "buyer" ? "other" : prev.primaryCrop || "grains",
+      primaryCrop: type === "buyer" ? "Other" : prev.primaryCrop || "Grains",
     }));
   };
 
@@ -76,7 +76,7 @@ export default function Register() {
         phone: "",
         location: "",
         gender: "male",
-        primaryCrop: accountType === "buyer" ? "other" : "grains",
+        primaryCrop: accountType === "buyer" ? "Other" : "Grains",
       });
     } catch (error) {
       setErrorMessage(
