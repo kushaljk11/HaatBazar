@@ -8,6 +8,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import FarmerDashboard from "./farmer/Dashboard";
 import MarketPlace from "./farmer/MarketPlace";
+import MyCrops from "./farmer/MyCrops";
 
 function App() {
   // if (isCheckingAuth && !authUser)
@@ -28,6 +29,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
           <Route path="/farmer/marketplace" element={<MarketPlace />} />
+          <Route path="/farmer/my-crops" element={<MyCrops />} />
         </Routes>
       </BrowserRouter>
     </>
