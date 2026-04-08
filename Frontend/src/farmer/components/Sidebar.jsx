@@ -15,7 +15,7 @@ import logo from "../../assets/logo.png";
 const navItems = [
     { label: "Dashboard", icon: LayoutGrid, Link: "/farmer/dashboard" },
     { label: "Marketplace", icon: Store, Link: "/farmer/marketplace" },
-    { label: "Add New Crop", icon: PlusCircle, Link: "/farmer/list-crop" },
+    { label: "Add New Crop", icon: PlusCircle, Link: "/farmer/list-crops" },
     { label: "My Crops", icon: Leaf, Link: "/farmer/my-crops" },
     { label: "Orders", icon: ShoppingCart, Link: "/farmer/orders" },
     { label: "Settings", icon: Settings, Link: "/farmer/settings" },
