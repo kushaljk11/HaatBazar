@@ -68,7 +68,7 @@ export default function Sidebar() {
                 <Link to="/farmer/list-crops">
                 <button
                     type="button"
-                    className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-700 px-4 py-3 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(4,72,52,0.25)] transition hover:bg-emerald-800"
+                    className="flex w-full items-center justify-center gap-2 bg-emerald-700 px-4 py-3 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(4,72,52,0.25)] transition hover:bg-emerald-800"
                 >
                     <PlusCircle className="h-4 w-4" />
                     <span>List New Crop</span>
