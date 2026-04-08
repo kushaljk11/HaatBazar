@@ -7,6 +7,7 @@ import Landing from "./pages/Landing";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import FarmerDashboard from "./farmer/Dashboard";
+import MarketPlace from "./farmer/MarketPlace";
 
 function App() {
   // if (isCheckingAuth && !authUser)
@@ -26,6 +27,7 @@ function App() {
           <Route path="/aboutus" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
+          <Route path="/farmer/marketplace" element={<MarketPlace />} />
         </Routes>
       </BrowserRouter>
     </>
