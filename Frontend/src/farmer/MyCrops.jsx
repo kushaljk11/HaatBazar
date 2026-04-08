@@ -128,10 +128,10 @@ export default function MyCrops() {
       <div className="flex h-full min-h-0 w-full flex-col">
         <TopBar />
         <main className="flex h-full min-h-0 w-full flex-col overflow-auto ">
-          <section className="rounded-3xl border border-emerald-100/80 bg-white/90 p-5 shadow-sm md:p-6">
+          <section className="border border-emerald-100/80 bg-[#f6f8f7] p-5 shadow-sm md:p-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+                <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
                   My Crops
                 </h1>
                 <p className="mt-2 text-sm text-slate-600 md:text-base">
@@ -172,7 +172,9 @@ export default function MyCrops() {
                       <p className="text-2xl font-semibold leading-none text-slate-900">
                         {card.value}
                       </p>
-                      <p className={`pb-1 text-xs font-semibold ${card.noteTone}`}>
+                      <p
+                        className={`pb-1 text-xs font-semibold ${card.noteTone}`}
+                      >
                         {card.note}
                       </p>
                     </div>
@@ -190,7 +192,9 @@ export default function MyCrops() {
                       <th className="px-5 py-4 font-semibold">Status</th>
                       <th className="px-5 py-4 font-semibold">Price (Kg)</th>
                       <th className="px-5 py-4 font-semibold">Inventory</th>
-                      <th className="px-5 py-4 font-semibold text-center">Actions</th>
+                      <th className="px-5 py-4 font-semibold text-center">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
 
@@ -231,7 +235,9 @@ export default function MyCrops() {
                           <div className="max-w-[180px]">
                             <p
                               className={`text-right text-sm font-semibold ${
-                                crop.quantity === 0 ? "text-rose-600" : "text-slate-800"
+                                crop.quantity === 0
+                                  ? "text-rose-600"
+                                  : "text-slate-800"
                               }`}
                             >
                               {crop.quantity} kg
@@ -265,7 +271,9 @@ export default function MyCrops() {
               </div>
 
               <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50 px-5 py-3 text-xs text-slate-500 md:flex-row md:items-center md:justify-between">
-                <p className="uppercase tracking-wide">Showing 1-4 of 14 listings</p>
+                <p className="uppercase tracking-wide">
+                  Showing 1-4 of 14 listings
+                </p>
                 <div className="inline-flex items-center gap-1">
                   <button className="rounded-md bg-white px-3 py-1.5 text-slate-600 transition hover:bg-slate-100">
                     Prev

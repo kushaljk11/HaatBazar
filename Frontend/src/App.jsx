@@ -10,6 +10,7 @@ import FarmerDashboard from "./farmer/Dashboard";
 import MarketPlace from "./farmer/MarketPlace";
 import MyCrops from "./farmer/MyCrops";
 import AddNewCrop from "./farmer/AddNewCrops";
+import Orders from "./farmer/Order";
 
 function App() {
   // if (isCheckingAuth && !authUser)
@@ -32,6 +33,7 @@ function App() {
           <Route path="/farmer/marketplace" element={<MarketPlace />} />
           <Route path="/farmer/my-crops" element={<MyCrops />} />
           <Route path="/farmer/list-crops" element={<AddNewCrop />} />
+          <Route path="/farmer/orders" element={<Orders />} />
         </Routes>
       </BrowserRouter>
     </>

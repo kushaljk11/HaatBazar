@@ -99,7 +99,6 @@ export default function FarmerDashboard() {
   return (
     <div className="flex min-h-screen bg-[#f4f6f6]">
       <Sidebar />
-
       <main className="flex-1">
         <Topbar />
         <section className="p-6 flex justify-between items-center">

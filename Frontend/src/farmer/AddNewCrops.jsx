@@ -9,9 +9,9 @@ export default function AddNewCrops() {
       <div className="flex h-full min-h-0 w-full flex-col">
         <Topbar />
         <main className="flex h-full min-h-0 w-full flex-col overflow-auto bg-[#f6f8f7] p-4 md:p-6">
-          <div className="mx-auto w-full max-w-6xl space-y-4 pb-8">
+          <div className="mx-auto w-full max-w-7xl space-y-4 pb-8">
             <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
                 Add New Crop
               </h1>
               <p className="mt-1 text-sm text-slate-600 md:text-base">

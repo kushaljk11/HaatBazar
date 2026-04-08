@@ -1,4 +1,3 @@
-
 import {
     BarChart3,
     CircleHelp,
@@ -11,6 +10,7 @@ import {
     Store,
 } from "lucide-react";
 import logo from "../../assets/logo.png";
+import { Link } from "react-router-dom";
 
 const navItems = [
     { label: "Dashboard", icon: LayoutGrid, Link: "/farmer/dashboard" },
@@ -65,6 +65,7 @@ export default function Sidebar() {
             </nav>
 
             <div className="mt-auto space-y-3 border-t border-emerald-100 pt-4">
+                <Link to="/farmer/list-crops">
                 <button
                     type="button"
                     className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-700 px-4 py-3 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(4,72,52,0.25)] transition hover:bg-emerald-800"
@@ -72,6 +73,7 @@ export default function Sidebar() {
                     <PlusCircle className="h-4 w-4" />
                     <span>List New Crop</span>
                 </button>
+                </Link>
 
                 <button
                     type="button"
