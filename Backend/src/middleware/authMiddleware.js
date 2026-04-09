@@ -13,7 +13,7 @@ if (!JWT_SECRET) {
 export const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized, Please Login or Register" });
   }
 
   const token = authHeader.split(" ")[1];
@@ -36,7 +36,7 @@ export const authMiddleware = (req, res, next) => {
 export const adminonly = (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({
-      message: "Authentication required. Please include a valid Bearer token.",
+      message: "Authentication required. Please Login or include a valid Bearer token.",
     });
   }
 
@@ -53,7 +53,7 @@ export const adminonly = (req, res, next) => {
 export const adminOrSelf = (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({
-      message: "Authentication required. Please include a valid Bearer token.",
+      message: "Authentication required. Please Login or include a valid Bearer token.",
     });
   }
 
