@@ -10,71 +10,106 @@ import {
 } from "lucide-react";
 import TopBar from "./components/Topbar";
 import SideBar from "./components/Sidebar";
+import { toast } from "react-hot-toast";
+import api from "../utils/axios";
+import { useEffect, useMemo, useState } from "react";
 
 export default function MyCrops() {
-  const crops = [
-    {
-      id: "CRP-2041",
-      name: "Himalayan Vine Tomatoes",
-      variety: "Grade A Organic",
-      region: "Terai Region",
-      image:
-        "https://imgs.search.brave.com/NSrzNBrnm41gehaMIiI_00PsvE0vCiOWrNw3F9m7TNc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMucGV4ZWxzLmNv/bS9waG90b3MvNDAy/MjA5MS9wZXhlbHMt/cGhvdG8tNDAyMjA5/MS5qcGVnP2F1dG89/Y29tcHJlc3MmY3M9/dGlueXNyZ2ImZHBy/PTEmdz01MDA",
-      price: 120,
-      quantity: 450,
-      status: "Active",
-      utilization: 72,
-    },
-    {
-      id: "CRP-2042",
-      name: "Organic Baby Carrots",
-      variety: "Sweet Crunch",
-      region: "Kathmandu Valley",
-      image:
-        "https://imgs.search.brave.com/GNhDSNCYG4PsT1awAuRq3JQPiQSJPblPeD_Kibh3FpA/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/c3RvY2tzbmFwLmlv/L2ltZy10aHVtYnMv/MjgwaC9jYXJyb3Rz/LXNvaWxfN1NXTEdI/TTc1Qi5qcGc",
-      price: 85,
-      quantity: 1200,
-      status: "Pending Moderation",
-      utilization: 48,
-    },
-    {
-      id: "CRP-2043",
-      name: "Green Crown Broccoli",
-      variety: "Premium Export",
-      region: "Nagarkot",
-      image:
-        "https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?auto=format&fit=crop&w=1000&q=80",
-      price: 180,
-      quantity: 0,
-      status: "Sold Out",
-      utilization: 0,
-    },
-    {
-      id: "CRP-2044",
-      name: "Red River Potatoes",
-      variety: "Starch Content 18%",
-      region: "Palpa",
-      image:
-        "https://imgs.search.brave.com/Esmr46adpo2cONX8GSi0bBp26E7W2gf5xwQUdhFjYR4/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9wbHVz/LnVuc3BsYXNoLmNv/bS9wcmVtaXVtX3Bo/b3RvLTE2ODE4MjY3/ODU4NjgtNzMyNWM4/ZjBlNDE2P2ZtPWpw/ZyZxPTYwJnc9MzAw/MCZpeGxpYj1yYi00/LjEuMCZpeGlkPU0z/d3hNakEzZkRCOE1I/eHpaV0Z5WTJoOE5Y/eDhjRzkwWVhSdmMz/eGxibnd3Zkh3d2ZI/eDhNQT09",
-      price: 45,
-      quantity: 830,
-      status: "Active",
-      utilization: 63,
-    },
-  ];
+  const [totalListing, setTotalListing] = useState(0);
+  const [crops, setCrops] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+  const token = localStorage.getItem("token") || storedUser?.token;
+  const userId = storedUser?.id;
+
+  useEffect(() => {
+    const fetchSummaryData = async () => {
+      if (!userId || !token) {
+        setError("Please login to view your crops.");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError("");
+
+        const headers = { Authorization: `Bearer ${token}` };
+        const [listingRes, postsRes] = await Promise.all([
+          api.get(`/count/${userId}`, { headers }),
+          api.get(`/myposts/${userId}`, { headers }),
+        ]);
+
+        setTotalListing(listingRes?.data?.count || 0);
+        setCrops(postsRes?.data?.posts || []);
+      } catch (fetchError) {
+        const message =
+          fetchError?.response?.data?.message ||
+          "Failed to fetch your crop listings.";
+        setError(message);
+        toast.error(message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSummaryData();
+  }, [token, userId]);
+
+  const totalStock = useMemo(
+    () => crops.reduce((sum, crop) => sum + Number(crop?.quantity || 0), 0),
+    [crops],
+  );
+
+  const potentialRevenue = useMemo(
+    () =>
+      crops.reduce(
+        (sum, crop) =>
+          sum +
+          Number(crop?.price || 0) * Number(crop?.quantity || 0),
+        0,
+      ),
+    [crops],
+  );
+
+  const urgentActions = useMemo(
+    () =>
+      crops.filter(
+        (crop) =>
+          Number(crop?.quantity || 0) === 0 || crop?.adminApproval !== "Approved",
+      ).length,
+    [crops],
+  );
+
+  const activeCropsCount = useMemo(
+    () => crops.filter((crop) => crop?.status !== "Sold Out").length,
+    [crops],
+  );
+
+  const archivedCropsCount = useMemo(
+    () => crops.filter((crop) => crop?.status === "Sold Out").length,
+    [crops],
+  );
+
+  const maxQuantity = useMemo(
+    () => Math.max(...crops.map((crop) => Number(crop?.quantity || 0)), 1),
+    [crops],
+  );
 
   const summaryCards = [
     {
       label: "Total Listings",
-      value: "14",
-      note: "+2 this month",
+      value: totalListing,
+      note: `${activeCropsCount} active`,
       icon: Sprout,
       tone: "bg-white border-emerald-100",
       noteTone: "text-emerald-700",
     },
     {
       label: "Total Stock",
-      value: "2,480",
+      value: totalStock.toLocaleString(),
       note: "kg total",
       icon: Warehouse,
       tone: "bg-white border-emerald-100",
@@ -82,7 +117,7 @@ export default function MyCrops() {
     },
     {
       label: "Potential Revenue",
-      value: "Rs. 84k",
+      value: `Rs. ${potentialRevenue.toLocaleString()}`,
       note: "Estimated",
       icon: TrendingUp,
       tone: "bg-white border-emerald-100",
@@ -90,8 +125,8 @@ export default function MyCrops() {
     },
     {
       label: "Urgent Actions",
-      value: "03",
-      note: "Restock needed",
+      value: String(urgentActions).padStart(2, "0"),
+      note: "Needs attention",
       icon: AlertTriangle,
       tone: "bg-emerald-100/80 border-emerald-200",
       noteTone: "text-emerald-800",
@@ -107,6 +142,10 @@ export default function MyCrops() {
       return "bg-amber-100 text-amber-800";
     }
 
+    if (status === "Rejected") {
+      return "bg-rose-100 text-rose-800";
+    }
+
     return "bg-rose-100 text-rose-800";
   };
 
@@ -120,6 +159,22 @@ export default function MyCrops() {
     }
 
     return "bg-emerald-700";
+  };
+
+  const getStatusLabel = (crop) => {
+    if (crop?.adminApproval === "Pending") {
+      return "Pending Moderation";
+    }
+
+    if (crop?.adminApproval === "Rejected") {
+      return "Rejected";
+    }
+
+    if (crop?.status === "Sold Out") {
+      return "Sold Out";
+    }
+
+    return "Active";
   };
 
   return (
@@ -142,14 +197,18 @@ export default function MyCrops() {
 
               <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
                 <button className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-emerald-900 shadow-sm">
-                  Active (4)
+                  Active ({activeCropsCount})
                 </button>
                 <button className="rounded-lg px-4 py-2 text-sm text-slate-500 transition hover:text-slate-700">
                   <Archive className="mr-1 inline h-4 w-4" />
-                  Archived
+                  Archived ({archivedCropsCount})
                 </button>
               </div>
             </div>
+
+            {error ? (
+              <p className="mt-4 text-sm font-medium text-rose-600">{error}</p>
+            ) : null}
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {summaryCards.map((card) => {
@@ -199,21 +258,55 @@ export default function MyCrops() {
                   </thead>
 
                   <tbody className="divide-y divide-slate-100 bg-white">
-                    {crops.map((crop) => (
-                      <tr key={crop.id} className="hover:bg-emerald-50/50">
+                    {isLoading ? (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="px-5 py-8 text-center text-sm text-slate-500"
+                        >
+                          Loading your crops...
+                        </td>
+                      </tr>
+                    ) : null}
+
+                    {!isLoading && crops.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="px-5 py-8 text-center text-sm text-slate-500"
+                        >
+                          No crop listings found. Add a new crop to get started.
+                        </td>
+                      </tr>
+                    ) : null}
+
+                    {!isLoading &&
+                      crops.map((crop) => {
+                        const statusLabel = getStatusLabel(crop);
+                        const quantity = Number(crop?.quantity || 0);
+                        const utilization = Math.min(
+                          100,
+                          Math.round((quantity / maxQuantity) * 100),
+                        );
+
+                        return (
+                      <tr key={crop._id} className="hover:bg-emerald-50/50">
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
                             <img
-                              src={crop.image}
-                              alt={crop.name}
+                              src={
+                                crop?.postImage ||
+                                "https://images.pexels.com/photos/4022091/pexels-photo-4022091.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
+                              }
+                              alt={crop?.postTitle || "Crop image"}
                               className="h-12 w-12 rounded-lg object-cover"
                             />
                             <div>
                               <p className="text-base font-semibold text-slate-900">
-                                {crop.name}
+                                {crop?.postTitle}
                               </p>
                               <p className="text-xs text-slate-500">
-                                {crop.variety} • {crop.region}
+                                {crop?.variety} • {crop?.postLocation}
                               </p>
                             </div>
                           </div>
@@ -221,31 +314,31 @@ export default function MyCrops() {
 
                         <td className="px-5 py-4">
                           <span
-                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusClass(crop.status)}`}
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusClass(statusLabel)}`}
                           >
-                            {crop.status}
+                            {statusLabel}
                           </span>
                         </td>
 
                         <td className="px-5 py-4 text-sm font-semibold text-slate-900">
-                          Rs. {crop.price}
+                          Rs. {Number(crop?.price || 0)}
                         </td>
 
                         <td className="px-5 py-4">
                           <div className="max-w-[180px]">
                             <p
                               className={`text-right text-sm font-semibold ${
-                                crop.quantity === 0
+                                quantity === 0
                                   ? "text-rose-600"
                                   : "text-slate-800"
                               }`}
                             >
-                              {crop.quantity} kg
+                              {quantity} kg
                             </p>
                             <div className="mt-1 h-1.5 w-full rounded-full bg-slate-200">
                               <div
-                                className={`h-full rounded-full ${getInventoryBarClass(crop.quantity)}`}
-                                style={{ width: `${crop.utilization}%` }}
+                                className={`h-full rounded-full ${getInventoryBarClass(quantity)}`}
+                                style={{ width: `${utilization}%` }}
                               />
                             </div>
                           </div>
@@ -265,14 +358,16 @@ export default function MyCrops() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    );})}
                   </tbody>
                 </table>
               </div>
 
               <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50 px-5 py-3 text-xs text-slate-500 md:flex-row md:items-center md:justify-between">
                 <p className="uppercase tracking-wide">
-                  Showing 1-4 of 14 listings
+                  {crops.length > 0
+                    ? `Showing 1-${crops.length} of ${totalListing} listings`
+                    : "Showing 0 listings"}
                 </p>
                 <div className="inline-flex items-center gap-1">
                   <button className="rounded-md bg-white px-3 py-1.5 text-slate-600 transition hover:bg-slate-100">

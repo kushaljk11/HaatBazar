@@ -1,8 +1,101 @@
 import { ImagePlus, Leaf, PackageSearch, Trash2 } from "lucide-react";
 import Topbar from "./components/Topbar";
 import SideBar from "./components/Sidebar";
+import { useState } from "react";
+import api from "../utils/axios";
+import toast from "react-hot-toast";
 
 export default function AddNewCrops() {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [location, setLocation] = useState("");
+  const [category, setCategory] = useState("vegetables");
+  const [tag, setTag] = useState("vegetables");
+  const [variety, setVariety] = useState("");
+  const [contactInfo, setContactInfo] = useState("");
+  const [minimumOrder, setMinimumOrder] = useState("");
+  const [postImage, setPostImage] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchCreatePost = async () => {
+    if (isSubmitting) return;
+
+    if (
+      !title.trim() ||
+      !description.trim() ||
+      !location.trim() ||
+      !variety.trim() ||
+      !contactInfo.trim() ||
+      !postImage.trim() ||
+      !price ||
+      !quantity ||
+      !minimumOrder
+    ) {
+      setError("Please fill in all required fields.");
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setError("");
+
+      const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+        const token = localStorage.getItem("token");
+        const userId = storedUser?.id;
+
+        if (!userId) {
+          return;
+        }
+      const toastId = toast.loading("Publishing crop...");
+
+      const postData = {
+        postTitle: title.trim(),
+        postDescription: description.trim(),
+        price: Number(price),
+        quantity: Number(quantity),
+        postLocation: location,
+        category,
+        variety: variety.trim(),
+        contactInfo: contactInfo.trim(),
+        minimumOrder: Number(minimumOrder),
+        postImage: postImage.trim(),
+        tag,
+      };
+
+      const response = await api.post("/create", postData, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+
+      toast.success("Post created successfully!", { id: toastId });
+      console.log("Post created successfully:", response.data);
+
+      setTitle("");
+      setDescription("");
+      setPrice("");
+      setQuantity("");
+      setLocation("");
+      setCategory("vegetables");
+      setTag("vegetables");
+      setVariety("");
+      setContactInfo("");
+      setMinimumOrder("");
+      setPostImage("");
+    } catch (err) {
+      console.error("Error creating post:", err);
+      const message =
+        err?.response?.data?.message ||
+        "Failed to create post. Please try again.";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       <SideBar />
@@ -22,7 +115,9 @@ export default function AddNewCrops() {
             <section className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm md:p-6">
               <div className="mb-4 flex items-center gap-2">
                 <Leaf className="h-4 w-4 text-emerald-700" />
-                <h2 className="text-lg font-semibold text-slate-900">Basic Information</h2>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Basic Information
+                </h2>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -34,6 +129,8 @@ export default function AddNewCrops() {
                     type="text"
                     placeholder="e.g. Organic Red Tomatoes"
                     className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
                   />
                 </div>
 
@@ -41,13 +138,37 @@ export default function AddNewCrops() {
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Category
                   </label>
-                  <select className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white">
-                    <option>Vegetables</option>
-                    <option>Fruits</option>
-                    <option>Grains</option>
-                    <option>Legumes</option>
-                    <option>Herbs and Spices</option>
-                    <option>Nuts and Seeds</option>
+                  <select
+                    className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                  >
+                    <option value="vegetables">Vegetables</option>
+                    <option value="fruits">Fruits</option>
+                    <option value="grains">Grains</option>
+                    <option value="dairy">Dairy</option>
+                    <option value="meat">Meat</option>
+                    <option value="poultry">Poultry</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Tag
+                  </label>
+                  <select
+                    className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
+                    value={tag}
+                    onChange={(e) => setTag(e.target.value)}
+                  >
+                    <option value="vegetables">Vegetables</option>
+                    <option value="fruits">Fruits</option>
+                    <option value="grains">Grains</option>
+                    <option value="dairy">Dairy</option>
+                    <option value="meat">Meat</option>
+                    <option value="poultry">Poultry</option>
+                    <option value="other">Other</option>
                   </select>
                 </div>
 
@@ -59,6 +180,8 @@ export default function AddNewCrops() {
                     type="text"
                     placeholder="e.g. Roma / Heirloom"
                     className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
+                    value={variety}
+                    onChange={(e) => setVariety(e.target.value)}
                   />
                 </div>
 
@@ -66,13 +189,18 @@ export default function AddNewCrops() {
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Address of Cultivation
                   </label>
-                  <select className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white">
-                    <option>Kathmandu, Nepal</option>
-                    <option>Lalitpur, Nepal</option>
-                    <option>Bhaktapur, Nepal</option>
-                    <option>Pokhara, Nepal</option>
-                    <option>Biratnagar, Nepal</option>
-                    <option>Birgunj, Nepal</option>
+                  <select
+                    className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                  >
+                    <option value="">Select location</option>
+                    <option value="Kathmandu, Nepal">Kathmandu, Nepal</option>
+                    <option value="Lalitpur, Nepal">Lalitpur, Nepal</option>
+                    <option value="Bhaktapur, Nepal">Bhaktapur, Nepal</option>
+                    <option value="Pokhara, Nepal">Pokhara, Nepal</option>
+                    <option value="Biratnagar, Nepal">Biratnagar, Nepal</option>
+                    <option value="Birgunj, Nepal">Birgunj, Nepal</option>
                   </select>
                 </div>
 
@@ -84,6 +212,8 @@ export default function AddNewCrops() {
                     type="text"
                     placeholder="e.g. 9800000000"
                     className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
+                    value={contactInfo}
+                    onChange={(e) => setContactInfo(e.target.value)}
                   />
                 </div>
               </div>
@@ -92,7 +222,9 @@ export default function AddNewCrops() {
             <section className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm md:p-6">
               <div className="mb-4 flex items-center gap-2">
                 <PackageSearch className="h-4 w-4 text-emerald-700" />
-                <h2 className="text-lg font-semibold text-slate-900">Pricing and Stock</h2>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Pricing and Stock
+                </h2>
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">
@@ -105,6 +237,8 @@ export default function AddNewCrops() {
                     min="0"
                     placeholder="Rs. 0"
                     className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
                   />
                 </div>
 
@@ -117,6 +251,8 @@ export default function AddNewCrops() {
                     min="0"
                     placeholder="500"
                     className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
                   />
                 </div>
 
@@ -129,6 +265,8 @@ export default function AddNewCrops() {
                     min="1"
                     placeholder="5"
                     className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
+                    value={minimumOrder}
+                    onChange={(e) => setMinimumOrder(e.target.value)}
                   />
                 </div>
               </div>
@@ -138,21 +276,44 @@ export default function AddNewCrops() {
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <ImagePlus className="h-4 w-4 text-emerald-700" />
-                  <h2 className="text-lg font-semibold text-slate-900">Product Images</h2>
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    Product Images
+                  </h2>
                 </div>
                 <span className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
                   Max 5 Photos
                 </span>
               </div>
 
+              <div className="mb-4">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Primary Image URL
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://example.com/crop-image.jpg"
+                  className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
+                  value={postImage}
+                  onChange={(e) => setPostImage(e.target.value)}
+                />
+              </div>
+
               <div className="grid gap-3 md:grid-cols-12">
                 <div className="relative overflow-hidden rounded-3xl border border-emerald-100 md:col-span-6">
                   <img
-                    src="https://imgs.search.brave.com/NSrzNBrnm41gehaMIiI_00PsvE0vCiOWrNw3F9m7TNc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMucGV4ZWxzLmNv/bS9waG90b3MvNDAy/MjA5MS9wZXhlbHMt/cGhvdG8tNDAyMjA5/MS5qcGVnP2F1dG89/Y29tcHJlc3MmY3M9/dGlueXNyZ2ImZHBy/PTEmdz01MDA"
+                    src={
+                      postImage.trim()
+                        ? postImage
+                        : "https://images.pexels.com/photos/4022091/pexels-photo-4022091.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
+                    }
                     alt="Primary crop preview"
                     className="h-56 w-full object-cover"
                   />
-                  <button className="absolute right-3 top-3 rounded-full bg-white/90 p-2 text-rose-500 shadow-sm transition hover:bg-white">
+                  <button
+                    type="button"
+                    className="absolute right-3 top-3 rounded-full bg-white/90 p-2 text-rose-500 shadow-sm transition hover:bg-white"
+                    onClick={() => setPostImage("")}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -172,23 +333,40 @@ export default function AddNewCrops() {
             </section>
 
             <section className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm md:p-6">
-              <h2 className="text-lg font-semibold text-slate-900">Product Description</h2>
+              <h2 className="text-lg font-semibold text-slate-900">
+                Product Description
+              </h2>
               <p className="mt-1 text-sm text-slate-500">
-                Share growing method, soil quality, harvest date, and taste profile.
+                Share growing method, soil quality, harvest date, and taste
+                profile.
               </p>
 
               <textarea
                 rows="6"
                 placeholder="Describe how these crops were grown, soil health, harvest date, flavor profile, and why buyers should choose this listing..."
                 className="mt-3 w-full resize-none rounded-2xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
               />
 
+              {error ? (
+                <p className="mt-3 text-sm font-medium text-rose-600">{error}</p>
+              ) : null}
+
               <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
-                <button className="rounded-xl border border-emerald-200 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50">
+                <button
+                  type="button"
+                  className="rounded-xl border border-emerald-200 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50"
+                >
                   Save Draft
                 </button>
-                <button className="rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800">
-                  Publish Crop
+                <button
+                  type="button"
+                  className="rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
+                  disabled={isSubmitting}
+                  onClick={fetchCreatePost}
+                >
+                  {isSubmitting ? "Publishing..." : "Publish Crop"}
                 </button>
               </div>
             </section>
