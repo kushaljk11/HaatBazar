@@ -222,6 +222,12 @@ export const updatePostStatus = async (req, res) => {
     if (!updatedPost) {
       return res.status(404).json({ message: "Post not found" });
     }
+    if (status === "Sold Out") {
+      await User.findByIdAndUpdate(updatedPost.user, { $push: { soldOutPosts: updatedPost._id } });
+    }
+    if (status !== "Sold Out" && status !== "Available" && status !== "Pending") {
+      return res.status(400).json({ message: "Invalid post status" });
+    }
     res.status(200).json({ message: "Post status updated successfully", post: updatedPost });
   } catch (error) {
     console.error("Error updating post status:", error);
@@ -248,4 +254,33 @@ export const searchPosts = async (req, res) => {
         console.error("Error searching posts:", error);
         res.status(500).json({ message: "Failed to search posts" });
     }
+};
+
+// get recent log of user
+export const getRecentUserLogs = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid user id" });
+    }
+
+    const posts = await Post.find({ user: userId })
+      .sort({ updatedAt: -1 })
+      .limit(10)
+      .select("postTitle status adminApproval createdAt updatedAt")
+      .lean();
+
+    const logs = posts.map((post) => ({
+      id: post._id,
+      action: `Post \"${post.postTitle}\" is ${post.adminApproval}`,
+      message: `Status: ${post.status}`,
+      timestamp: post.updatedAt || post.createdAt,
+    }));
+
+    res.status(200).json({ message: "Recent logs found", logs });
+  } catch (error) {
+    console.error("Error fetching recent user logs:", error);
+    res.status(500).json({ message: "Failed to fetch recent user logs" });
+  }
 };

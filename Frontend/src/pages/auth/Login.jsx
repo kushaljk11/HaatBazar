@@ -22,11 +22,25 @@ export default function Login() {
     try {
       const response = await api.post("/login", formData);
       console.log("Login successful:", response.data);
+
+      const user = response?.data?.user;
+      const token = response?.data?.token;
+      if (user && token) {
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("token", token);
+      }
+
       setSuccess("Login successful! Redirecting...");
       toast.success("Login successful! Redirecting...");
       setTimeout(() => {
         // aile ko lagi about us ma redirect garne
-        navigate("/aboutus");
+        if (user?.role === "admin") {
+          navigate("/admin/dashboard");
+        } else if (user?.role === "buyer") {
+          navigate("/buyer/dashboard");
+        } else {
+          navigate("/farmer/dashboard");
+        }
       }, 2000);
 
     } catch (error) {

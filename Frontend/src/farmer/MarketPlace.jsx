@@ -1,10 +1,75 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import Topbar from "./components/Topbar";
 import Sidebar from "./components/Sidebar";
+import api from "../utils/axios";
 
 export default function MarketPlace() {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [marketPosts, setMarketPosts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch marketplace posts from the backend
+  useEffect(() => {
+    const fetchMarketPosts = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("Invalid user session. Please login again.");
+          return;
+        }
+
+        const response = await api.get("/marketplace", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setMarketPosts(response?.data?.posts ?? []);
+      } catch (error) {
+        console.error("Error fetching marketplace posts:", error);
+      }
+    };
+    fetchMarketPosts();
+  }, []);
+
+  useEffect(() => {
+    const fetchSearchResults = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("Please Login to access the marketplace.");
+          return;
+        }
+        const response = await api.get("/search", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { keyword: searchQuery },
+        });
+        setMarketPosts(response?.data?.posts ?? []);
+      } catch (error) {
+        console.error("Error fetching search results:", error);
+      }
+    };
+
+    if (searchQuery.trim() !== "") {
+      fetchSearchResults();
+    } else {
+      // If search query is empty, refetch all marketplace posts
+      const fetchMarketPosts = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            console.error("Please Login to access the marketplace.");
+            return;
+          }
+          const response = await api.get("/marketplace", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setMarketPosts(response?.data?.posts ?? []);
+        } catch (error) {
+          console.error("Error fetching marketplace posts:", error);
+        }
+      };
+      fetchMarketPosts();
+    }
+  }, [searchQuery]);
 
   const quickFilters = [
     "Fresh",
@@ -14,88 +79,55 @@ export default function MarketPlace() {
     "Nearby",
   ];
 
-  const marketItems = [
-    {
-      id: 1,
-      name: "Fresh Tomatoes",
-      category: "Vegetables",
-      price: 120,
-      unit: "per kg",
-      location: "Kathmandu",
-      availability: "In Stock",
-      image:
-        "https://imgs.search.brave.com/NSrzNBrnm41gehaMIiI_00PsvE0vCiOWrNw3F9m7TNc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMucGV4ZWxzLmNv/bS9waG90b3MvNDAy/MjA5MS9wZXhlbHMt/cGhvdG8tNDAyMjA5/MS5qcGVnP2F1dG89/Y29tcHJlc3MmY3M9/dGlueXNyZ2ImZHBy/PTEmdz01MDA",
-    },
-    {
-      id: 2,
-      name: "Organic Apples",
-      category: "Fruits",
-      price: 150,
-      unit: "per kg",
-      location: "Lalitpur",
-      availability: "Limited Stock",
-      image:
-        "https://imgs.search.brave.com/1bv117TUZi6O6IemZ6omEIzw9PMaN8-pzDpvQPiv9Oc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMudW5zcGxhc2gu/Y29tL3Bob3RvLTE2/MDA2MjYzMzMzOTIt/NTlhMjBlNjQ2ZDk3/P2ZtPWpwZyZxPTYw/Jnc9MzAwMCZpeGxp/Yj1yYi00LjEuMCZp/eGlkPU0zd3hNakEz/ZkRCOE1IeHpaV0Z5/WTJoOE1qQjhmR0Z3/Y0d4bGMzeGxibnd3/Zkh3d2ZIeDhNQT09",
-    },
-    {
-      id: 3,
-      name: "High-Quality Rice",
-      category: "Grains",
-      price: 80,
-      unit: "per kg",
-      location: "Bhaktapur",
-      availability: "In Stock",
-      image:
-        "https://imgs.search.brave.com/3mlE9edr2RDPoZ3mttCu8N8nskPIQlPFqrrnlZw0Fo8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90aHVt/YnMuZHJlYW1zdGlt/ZS5jb20vYi9wYXJi/b2lsZWQtcmljZS1i/b2lsZWQtc2FsZS1y/ZXRhaWwtc2hvcC10/b3AtYW5nbGUtZGF5/LTMwNTMzODQ1NS5q/cGc",
-    },
-    {
-      id: 4,
-      name: "Fresh Milk",
-      category: "Dairy",
-      price: 60,
-      unit: "per liter",
-      location: "Pokhara",
-      availability: "Out of Stock",
-      image:
-        "https://imgs.search.brave.com/4XrSQz2zHoa9lNvDhTcJhZGDMl1UMvj-HeYwKJ6Bumw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wMzEv/OTkwLzk0My9zbWFs/bC9mcmVzaC1jb3Vu/dHJ5LW1pbGstaW4t/YS1nbGFzcy1vbi10/aGUtdGFibGUtcGhv/dG8uanBn",
-    },
-  ];
-
   function Card() {
     return (
       <section className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {marketItems.map((item) => (
+        {marketPosts.map((item) => (
           <div
-            key={item.id}
+            key={item._id}
             className="rounded-2xl border border-emerald-100 bg-white shadow-sm transition hover:shadow-md"
           >
             <img
-              src={item.image}
-              alt={item.name}
-              className="w-full h-48 object-cover rounded-t-2xl"
+              src={item.postImage}
+              alt={item.postTitle}
+              className="h-48 w-full rounded-t-2xl object-cover"
             />
             <div className="p-4">
-              <h3 className="text-lg font-bold text-slate-800">{item.name}</h3>
+              <h3 className="text-lg font-bold text-slate-800">
+                {item.postTitle}
+              </h3>
               <p className="text-sm text-slate-600">{item.category}</p>
-              <div className="flex items-center justify-between mt-2">
+              <div className="mt-2 flex items-center justify-between">
                 <span className="text-xl font-bold text-emerald-700">
-                  ₹{item.price}
+                  Rs {item.price}
                 </span>
-                <span className="text-sm text-slate-500">{item.unit}</span>
-              </div>
-              <div className="flex items-center justify-between mt-2">
                 <span className="text-sm text-slate-500">
-                  Location: {item.location}
+                  Qty: {item.quantity} kg
+                </span>
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <span className="text-sm text-slate-500">
+                  Location: {item.postLocation}
                 </span>
                 <span
-                  className={`text-xs font-semibold px-2 py-1 rounded-full ${item.availability === "In Stock" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                  className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                    item.status === "Available"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
                 >
-                  {item.availability}
+                  {item.status}
                 </span>
               </div>
             </div>
           </div>
         ))}
+
+        {marketPosts.length === 0 && (
+          <div className="col-span-full rounded-2xl border border-emerald-100 bg-white p-6 text-center text-slate-600">
+            No marketplace posts found.
+          </div>
+        )}
       </section>
     );
   }
@@ -123,6 +155,8 @@ export default function MarketPlace() {
                     type="text"
                     placeholder="Search crops, sellers, location..."
                     className="w-full rounded-xl border border-emerald-200 bg-emerald-50/40 py-2.5 pl-10 pr-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
 
@@ -270,8 +304,6 @@ export default function MarketPlace() {
           </section>
 
           {/* marketplace items grid */}
-          <Card />
-          <Card />
           <Card />
 
           <button

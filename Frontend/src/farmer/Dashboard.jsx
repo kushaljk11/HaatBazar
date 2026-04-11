@@ -7,8 +7,80 @@ import {
   FaMoneyBillWave,
   FaShoppingCart,
 } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import api from "../utils/axios";
 
 export default function FarmerDashboard() {
+  const [activeListingCount, setActiveListingCount] = useState(0);
+  const [myPost, setMyPost] = useState([]);
+  const [recentLogs, setRecentLogs] = useState([]);
+
+  useEffect(() => {
+    const fetchPostCount = async () => {
+      try {
+        const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+        const token = localStorage.getItem("token");
+        const userId = storedUser?.id;
+
+        if (!userId) {
+          return;
+        }
+
+        const response = await api.get(`/count/${userId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+
+        setActiveListingCount(response?.data?.count ?? 0);
+      } catch (error) {
+        console.error("Failed to fetch active listing count:", error);
+      }
+    };
+
+    fetchPostCount();
+  }, []);
+
+  useEffect(() => {
+    const fetchMyPosts = async () => {
+      try {
+        const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+        const token = localStorage.getItem("token");
+        const userId = storedUser?.id;
+        if (!userId) {
+          return;
+        }
+        const response = await api.get(`/myposts/${userId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        setMyPost(response?.data?.posts ?? []);
+      } catch (error) {
+        console.error("Failed to fetch my posts:", error);
+      }
+    };
+
+    fetchMyPosts();
+  }, []);
+
+  useEffect(() => {
+    const fetchRecentLogs = async () => {
+      try {
+        const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+        const token = localStorage.getItem("token");
+        const userId = storedUser?.id;
+        if (!userId) {
+          return;
+        }
+        const response = await api.get(`/recentlogs/${userId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        setRecentLogs(response?.data?.logs ?? []);
+      } catch (error) {
+        console.error("Failed to fetch recent logs:", error);
+      }
+    };
+
+    fetchRecentLogs();
+  }, []);
+
   const actionButtons = [
     {
       label: "Total Earnings",
@@ -21,7 +93,7 @@ export default function FarmerDashboard() {
       label: "Active Listing",
       icon: FaFileExport,
       primary: true,
-      value: "8 Crops",
+      value: `${activeListingCount} Crops`,
       description: "Crops currently listed in the marketplace",
     },
     {
@@ -35,7 +107,7 @@ export default function FarmerDashboard() {
       label: "Pending Approval",
       icon: FaClock,
       primary: false,
-      value: "3 Requests",
+      value: `${myPost.filter((post) => post.adminApproval === "Pending").length} Posts`,
       description: "Requests awaiting approval",
     },
   ];
@@ -96,6 +168,23 @@ export default function FarmerDashboard() {
     Shipped: "bg-sky-100 text-sky-800",
   };
 
+  const getRelativeTime = (value) => {
+    if (!value) return "Just now";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Just now";
+
+    const diffMs = Date.now() - date.getTime();
+    const minutes = Math.floor(diffMs / (1000 * 60));
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (minutes < 1) return "Just now";
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+    if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    if (days === 1) return "Yesterday";
+    return `${days} days ago`;
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <Sidebar />
@@ -106,7 +195,9 @@ export default function FarmerDashboard() {
           <section className="p-6 pb-0">
             <div>
               <h1 className="text-2xl font-semibold">Welcome back, User!</h1>
-              <p className="text-slate-600">Manage your crops and orders from here.</p>
+              <p className="text-slate-600">
+                Manage your crops and orders from here.
+              </p>
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3 rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
@@ -143,7 +234,9 @@ export default function FarmerDashboard() {
                         >
                           {btn.label}
                         </p>
-                        <p className="mt-2 text-2xl font-semibold">{btn.value}</p>
+                        <p className="mt-2 text-2xl font-semibold">
+                          {btn.value}
+                        </p>
                       </div>
 
                       <div
@@ -179,8 +272,12 @@ export default function FarmerDashboard() {
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-7">
                 <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h2 className="text-lg font-semibold text-slate-900">Weekly Performance</h2>
-                    <p className="text-sm text-slate-500">Orders trend with total weekly revenue.</p>
+                    <h2 className="text-lg font-semibold text-slate-900">
+                      Weekly Performance
+                    </h2>
+                    <p className="text-sm text-slate-500">
+                      Orders trend with total weekly revenue.
+                    </p>
                   </div>
 
                   <div className="flex gap-4">
@@ -192,17 +289,51 @@ export default function FarmerDashboard() {
                     </div>
                     <div className="rounded-xl bg-slate-100 px-3 py-2">
                       <p className="text-xs text-slate-600">Revenue</p>
-                      <p className="text-lg font-semibold text-slate-900">${totalRevenue}</p>
+                      <p className="text-lg font-semibold text-slate-900">
+                        ${totalRevenue}
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 <div className="overflow-hidden rounded-xl border border-slate-100 bg-slate-50 p-4">
-                  <svg viewBox="0 0 100 100" className="h-44 w-full" preserveAspectRatio="none">
-                    <line x1="0" y1="20" x2="100" y2="20" stroke="#d1d5db" strokeWidth="0.4" />
-                    <line x1="0" y1="40" x2="100" y2="40" stroke="#d1d5db" strokeWidth="0.4" />
-                    <line x1="0" y1="60" x2="100" y2="60" stroke="#d1d5db" strokeWidth="0.4" />
-                    <line x1="0" y1="80" x2="100" y2="80" stroke="#d1d5db" strokeWidth="0.4" />
+                  <svg
+                    viewBox="0 0 100 100"
+                    className="h-44 w-full"
+                    preserveAspectRatio="none"
+                  >
+                    <line
+                      x1="0"
+                      y1="20"
+                      x2="100"
+                      y2="20"
+                      stroke="#d1d5db"
+                      strokeWidth="0.4"
+                    />
+                    <line
+                      x1="0"
+                      y1="40"
+                      x2="100"
+                      y2="40"
+                      stroke="#d1d5db"
+                      strokeWidth="0.4"
+                    />
+                    <line
+                      x1="0"
+                      y1="60"
+                      x2="100"
+                      y2="60"
+                      stroke="#d1d5db"
+                      strokeWidth="0.4"
+                    />
+                    <line
+                      x1="0"
+                      y1="80"
+                      x2="100"
+                      y2="80"
+                      stroke="#d1d5db"
+                      strokeWidth="0.4"
+                    />
 
                     <polyline
                       fill="none"
@@ -222,25 +353,42 @@ export default function FarmerDashboard() {
                 </div>
               </div>
 
+
+              {/* recent log section */}
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-3">
                 <div className="mb-4">
-                  <h2 className="text-lg font-semibold text-slate-900">Recent Log</h2>
-                  <p className="text-sm text-slate-500">Latest activity from your farm account.</p>
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    Recent Log
+                  </h2>
+                  <p className="text-sm text-slate-500">
+                    Latest activity from your farm account.
+                  </p>
                 </div>
 
+                  
                 <div className="space-y-3">
-                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-                    <p className="text-sm font-medium text-slate-800">Order #HBZ-1042 confirmed</p>
-                    <p className="mt-1 text-xs text-slate-500">12 minutes ago</p>
-                  </div>
-                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-                    <p className="text-sm font-medium text-slate-800">Tomato listing updated</p>
-                    <p className="mt-1 text-xs text-slate-500">1 hour ago</p>
-                  </div>
-                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-                    <p className="text-sm font-medium text-slate-800">Payout of $240 processed</p>
-                    <p className="mt-1 text-xs text-slate-500">Yesterday</p>
-                  </div>
+                  {recentLogs.length > 0 ? (
+                    recentLogs.map((log, index) => (
+                      <div
+                        key={log._id || log.id || `${log.action || "log"}-${index}`}
+                        className="rounded-xl border border-slate-100 bg-slate-50 p-3"
+                      >
+                        <p className="text-sm font-medium text-slate-800">
+                          {log.action || log.title || log.message || "Activity updated"}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">
+                          {getRelativeTime(log.timestamp || log.createdAt || log.updatedAt)}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                      <p className="text-sm font-medium text-slate-800">No recent activity</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Your latest logs will appear here.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -250,8 +398,12 @@ export default function FarmerDashboard() {
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-semibold text-slate-900">Recent Orders</h2>
-                  <p className="text-sm text-slate-500">Manage your latest transactions</p>
+                  <h2 className="text-2xl font-semibold text-slate-900">
+                    Recent Orders
+                  </h2>
+                  <p className="text-sm text-slate-500">
+                    Manage your latest transactions
+                  </p>
                 </div>
 
                 <button className="rounded-lg px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50">
@@ -269,26 +421,36 @@ export default function FarmerDashboard() {
                       <th className="px-4 py-3 font-semibold">Quantity</th>
                       <th className="px-4 py-3 font-semibold">Status</th>
                       <th className="px-4 py-3 font-semibold">Amount</th>
-                      <th className="px-4 py-3 font-semibold text-center">Action</th>
+                      <th className="px-4 py-3 font-semibold text-center">
+                        Action
+                      </th>
                     </tr>
                   </thead>
 
                   <tbody className="divide-y divide-slate-200 bg-white text-sm text-slate-800">
                     {recentOrders.map((order) => (
                       <tr key={order.id} className="hover:bg-emerald-50/60">
-                        <td className="px-4 py-4 font-semibold text-emerald-800">{order.id}</td>
+                        <td className="px-4 py-4 font-semibold text-emerald-800">
+                          {order.id}
+                        </td>
 
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-3">
                             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-800">
                               {order.customerCode}
                             </span>
-                            <span className="font-medium text-slate-900">{order.customerName}</span>
+                            <span className="font-medium text-slate-900">
+                              {order.customerName}
+                            </span>
                           </div>
                         </td>
 
-                        <td className="px-4 py-4 text-slate-700">{order.product}</td>
-                        <td className="px-4 py-4 text-slate-700">{order.quantity}</td>
+                        <td className="px-4 py-4 text-slate-700">
+                          {order.product}
+                        </td>
+                        <td className="px-4 py-4 text-slate-700">
+                          {order.quantity}
+                        </td>
 
                         <td className="px-4 py-4">
                           <span
@@ -300,7 +462,9 @@ export default function FarmerDashboard() {
                           </span>
                         </td>
 
-                        <td className="px-4 py-4 font-semibold text-slate-900">{order.amount}</td>
+                        <td className="px-4 py-4 font-semibold text-slate-900">
+                          {order.amount}
+                        </td>
 
                         <td className="px-4 py-4 text-center">
                           <button className="rounded-md px-2 py-1 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100">

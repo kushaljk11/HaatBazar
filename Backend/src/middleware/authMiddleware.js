@@ -57,7 +57,7 @@ export const adminOrSelf = (req, res, next) => {
     });
   }
 
-  const userId = req.params.id;
+  const userId = req.params.userId || req.params.id;
   if (req.user.role !== "admin" && req.user.id !== userId) {
     return res.status(403).json({
       message: "Forbidden: Only admins or the owner of this resource can access it.",
