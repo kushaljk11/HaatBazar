@@ -3,8 +3,10 @@ import { Search, SlidersHorizontal } from "lucide-react";
 import Topbar from "./components/Topbar";
 import Sidebar from "./components/Sidebar";
 import api from "../utils/axios";
+import { useNavigate } from "react-router-dom";
 
 export default function MarketPlace() {
+  const navigate = useNavigate();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [marketPosts, setMarketPosts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -85,7 +87,8 @@ export default function MarketPlace() {
         {marketPosts.map((item) => (
           <div
             key={item._id}
-            className="rounded-2xl border border-emerald-100 bg-white shadow-sm transition hover:shadow-md"
+            className="cursor-pointer rounded-2xl border border-emerald-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            onClick={() => navigate(`/buyer/marketplace/${item._id}`, { state: { post: item } })}
           >
             <img
               src={item.postImage}
@@ -119,6 +122,16 @@ export default function MarketPlace() {
                   {item.status}
                 </span>
               </div>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  navigate(`/buyer/marketplace/${item._id}`, { state: { post: item } });
+                }}
+                className="mt-3 w-full rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
+              >
+                View Details
+              </button>
             </div>
           </div>
         ))}

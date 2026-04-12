@@ -14,6 +14,9 @@ import Orders from "./farmer/Order";
 import Setting from "./farmer/Setting";
 import Dashboard from "./buyer/Dashboard";
 import Marketplace from "./buyer/Marketplace";
+import Booking from "./buyer/Booking";
+import Wishlist from "./buyer/Wishlist";
+import Postetails from "./pages/Postetails";
 
 function App() {
   // if (isCheckingAuth && !authUser)
@@ -40,6 +43,9 @@ function App() {
           <Route path="/farmer/settings" element={<Setting />} />
           <Route path="/buyer/dashboard" element={<Dashboard />} />
           <Route path="/buyer/marketplace" element={<Marketplace />} />
+          <Route path="/buyer/marketplace/:id" element={<Postetails />} />
+          <Route path="/buyer/bookings" element={<Booking />} />
+          <Route path="/buyer/wishlist" element={<Wishlist />} />
         </Routes>
       </BrowserRouter>
     </>
