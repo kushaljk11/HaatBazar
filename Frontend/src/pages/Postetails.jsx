@@ -24,6 +24,14 @@ export default function Postetails() {
     const [error, setError] = useState("");
     const [isSaved, setIsSaved] = useState(false);
     const [wishlistLoading, setWishlistLoading] = useState(false);
+    const [buyNowLoading, setBuyNowLoading] = useState(false);
+    const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+    const [bookingLoading, setBookingLoading] = useState(false);
+    const [bookingForm, setBookingForm] = useState({
+        pickupDate: "",
+        timeInterval: "06:00 AM - 09:00 AM",
+        pickupLocation: "",
+    });
 
     const decreaseQty = () => setQuantity((prev) => Math.max(1, prev - 1));
     const increaseQty = () => setQuantity((prev) => Math.min(99, prev + 1));
@@ -128,6 +136,93 @@ export default function Postetails() {
             toast.error(message);
         } finally {
             setWishlistLoading(false);
+        }
+    };
+
+    const handleBuyNow = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            toast.error("Please login to place order.");
+            return;
+        }
+
+        if (!id || buyNowLoading) {
+            return;
+        }
+
+        try {
+            setBuyNowLoading(true);
+            const totalAmount = quantity * displayPost.price;
+            const checkoutQuery = new URLSearchParams({
+                amount: String(totalAmount),
+                gateway: "esewa",
+                postId: id,
+                quantity: String(quantity),
+                productName: displayPost.title,
+                deliveryAddress: displayPost.location,
+            }).toString();
+
+            navigate(`/buyer/payment/checkout?${checkoutQuery}`);
+        } finally {
+            setBuyNowLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        setBookingForm((prev) => ({
+            ...prev,
+            pickupLocation: post?.postLocation || prev.pickupLocation || "",
+        }));
+    }, [post?.postLocation]);
+
+    const handleBookingInput = (event) => {
+        const { name, value } = event.target;
+        setBookingForm((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleBookNow = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            toast.error("Please login to create booking.");
+            return;
+        }
+
+        if (!id || bookingLoading) {
+            return;
+        }
+
+        if (!bookingForm.pickupDate) {
+            toast.error("Please select pickup date.");
+            return;
+        }
+
+        try {
+            setBookingLoading(true);
+            await api.post(
+                "/bookings",
+                {
+                    productId: id,
+                    quantity,
+                    bookingMode: "reserve_pickup",
+                    paymentMethod: "cod",
+                    pickupDate: bookingForm.pickupDate,
+                    timeInterval: bookingForm.timeInterval,
+                    pickupLocation: bookingForm.pickupLocation || displayPost.location,
+                    deliveryAddress: bookingForm.pickupLocation || displayPost.location,
+                },
+                { headers: { Authorization: `Bearer ${token}` } },
+            );
+
+            toast.success("Booking created successfully");
+            setIsBookingModalOpen(false);
+            navigate("/buyer/bookings");
+        } catch (bookingError) {
+            const message =
+                bookingError?.response?.data?.message ||
+                "Failed to create booking. Please try again.";
+            toast.error(message);
+        } finally {
+            setBookingLoading(false);
         }
     };
     
@@ -392,9 +487,11 @@ export default function Postetails() {
                         <div className="mt-6 grid gap-3 sm:grid-cols-2">
                             <button
                                 type="button"
+                                onClick={handleBuyNow}
+                                disabled={buyNowLoading}
                                 className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0b5b40] px-6 py-4 text-sm font-semibold text-white transition hover:bg-[#094d36]"
                             >
-                                <FaShoppingCart className="text-sm" /> Buy Now
+                                <FaShoppingCart className="text-sm" /> {buyNowLoading ? "Placing..." : "Buy Now"}
                             </button>
 
                             <button
@@ -410,7 +507,7 @@ export default function Postetails() {
 
                         <button
                             type="button"
-                            onClick={() => navigate("/buyer/wishlist")}
+                            onClick={() => setIsBookingModalOpen(true)}
                             className="mt-3 w-full rounded-lg bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-200"
                         >
                             Book it
@@ -468,6 +565,81 @@ export default function Postetails() {
                     </article>
                 </div>
             </div>
+
+            {isBookingModalOpen ? (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                    <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
+                        <h3 className="text-xl font-semibold text-slate-900">Schedule Booking</h3>
+                        <p className="mt-1 text-sm text-slate-500">
+                            Choose booking date and preferred time interval.
+                        </p>
+
+                        <div className="mt-4 space-y-3">
+                            <div>
+                                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Pickup Date
+                                </label>
+                                <input
+                                    type="date"
+                                    name="pickupDate"
+                                    min={new Date().toISOString().slice(0, 10)}
+                                    value={bookingForm.pickupDate}
+                                    onChange={handleBookingInput}
+                                    className="w-full rounded-xl border border-emerald-200 bg-emerald-50/30 px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Time Interval
+                                </label>
+                                <select
+                                    name="timeInterval"
+                                    value={bookingForm.timeInterval}
+                                    onChange={handleBookingInput}
+                                    className="w-full rounded-xl border border-emerald-200 bg-emerald-50/30 px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+                                >
+                                    <option>06:00 AM - 09:00 AM</option>
+                                    <option>09:00 AM - 12:00 PM</option>
+                                    <option>12:00 PM - 03:00 PM</option>
+                                    <option>03:00 PM - 06:00 PM</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Pickup Location
+                                </label>
+                                <input
+                                    type="text"
+                                    name="pickupLocation"
+                                    value={bookingForm.pickupLocation}
+                                    onChange={handleBookingInput}
+                                    className="w-full rounded-xl border border-emerald-200 bg-emerald-50/30 px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-5 grid grid-cols-2 gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setIsBookingModalOpen(false)}
+                                className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleBookNow}
+                                disabled={bookingLoading}
+                                className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
+                            >
+                                {bookingLoading ? "Booking..." : "Confirm Booking"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
         </section>
     );
 }

@@ -16,10 +16,10 @@ import Topbar from "./components/Topbar";
 import api from "../utils/axios";
 
 const statusStyle = {
-    Upcoming: "bg-amber-100 text-amber-700",
-    Confirmed: "bg-blue-100 text-blue-700",
-    Delivered: "bg-emerald-100 text-emerald-700",
-    Cancelled: "bg-rose-100 text-rose-700",
+    Upcoming: "bg-emerald-100 text-emerald-800",
+    Confirmed: "bg-emerald-100 text-emerald-800",
+    Delivered: "bg-emerald-100 text-emerald-800",
+    Cancelled: "bg-emerald-100 text-emerald-800",
 };
 
 const normalizeStatus = (status) => {
@@ -163,11 +163,11 @@ export default function Booking() {
                         </p>
 
                         {error ? (
-                            <p className="mt-3 text-sm font-medium text-rose-600">{error}</p>
+                            <p className="mt-3 text-sm font-medium text-emerald-800">{error}</p>
                         ) : null}
 
                         <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                            <article className="rounded-xl border border-amber-100 bg-emerald-700 p-4">
+                            <article className="rounded-xl border border-emerald-100 bg-emerald-700 p-4">
                                 <div className="flex items-center justify-between">
                                     <p className="text-sm font-medium text-white">Upcoming</p>
                                     <CalendarClock className="h-4 w-4 text-white" />

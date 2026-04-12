@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Bell, Lock, Save, Sprout, User } from "lucide-react";
+import { Bell, Lock, MapPin, Save, User, Wallet } from "lucide-react";
 import { toast } from "react-hot-toast";
-import Topbar from "./components/Topbar";
 import Sidebar from "./components/Sidebar";
+import Topbar from "./components/Topbar";
 import api from "../utils/axios";
 
-export default function Setting() {
+export default function BuyerSetting() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState({
@@ -17,11 +17,10 @@ export default function Setting() {
     primaryCrop: "other",
   });
 
-  const [notifications, setNotifications] = useState({
-    orderUpdates: true,
-    lowStock: true,
-    weeklySummary: true,
-    promo: false,
+  const [preferences, setPreferences] = useState({
+    notifyOrder: true,
+    notifyWishlist: true,
+    notifyPromotions: false,
   });
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -166,20 +165,17 @@ export default function Setting() {
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto bg-[#f6f8f7]">
+      <div className="flex h-full min-h-0 w-full flex-col">
         <Topbar />
-
-        <div className="mx-auto max-w-7xl p-4 md:p-6">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-            Farmer Settings
-          </h1>
+        <main className="h-full w-full overflow-y-auto bg-[#f6f8f7] p-4 md:p-6">
+          <h1 className="text-2xl font-semibold text-slate-900">Buyer Settings</h1>
           <p className="mt-1 text-sm text-slate-600 md:text-base">
-            Manage your account profile and farm listing details.
+            Manage profile details, delivery preferences, and account notifications.
           </p>
 
           {isLoading ? (
             <div className="mt-6 rounded-2xl border border-emerald-100 bg-white p-8 text-center text-sm text-slate-500 shadow-sm">
-              Loading farmer settings...
+              Loading buyer settings...
             </div>
           ) : (
             <section className="mt-6 grid gap-5 xl:grid-cols-3">
@@ -187,16 +183,12 @@ export default function Setting() {
                 <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm md:p-6">
                   <div className="mb-5 flex items-center gap-2">
                     <User className="h-4 w-4 text-emerald-700" />
-                    <h2 className="text-lg font-semibold text-slate-900">
-                      Profile Information
-                    </h2>
+                    <h2 className="text-lg font-semibold text-slate-900">Profile Information</h2>
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Full Name
-                      </label>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Full Name</label>
                       <input
                         type="text"
                         name="name"
@@ -207,9 +199,7 @@ export default function Setting() {
                     </div>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Email Address
-                      </label>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Email Address</label>
                       <input
                         type="email"
                         value={profile.email}
@@ -219,9 +209,7 @@ export default function Setting() {
                     </div>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Phone Number
-                      </label>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Phone Number</label>
                       <input
                         type="tel"
                         name="phone"
@@ -232,9 +220,7 @@ export default function Setting() {
                     </div>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Gender
-                      </label>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Gender</label>
                       <select
                         name="gender"
                         value={profile.gender}
@@ -251,17 +237,24 @@ export default function Setting() {
 
                 <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm md:p-6">
                   <div className="mb-5 flex items-center gap-2">
-                    <Sprout className="h-4 w-4 text-emerald-700" />
-                    <h2 className="text-lg font-semibold text-slate-900">
-                      Farm and Store Details
-                    </h2>
+                    <MapPin className="h-4 w-4 text-emerald-700" />
+                    <h2 className="text-lg font-semibold text-slate-900">Delivery Preferences</h2>
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
+                    <div className="md:col-span-2">
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Default Delivery Location</label>
+                      <input
+                        type="text"
+                        name="location"
+                        value={profile.location}
+                        onChange={handleInput}
+                        className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
+                      />
+                    </div>
+
                     <div>
-                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Primary Crop
-                      </label>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Favorite Produce Type</label>
                       <select
                         name="primaryCrop"
                         value={profile.primaryCrop}
@@ -274,71 +267,45 @@ export default function Setting() {
                         <option value="other">Other</option>
                       </select>
                     </div>
-
-                    <div>
-                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Farm City / District
-                      </label>
-                      <input
-                        type="text"
-                        name="location"
-                        value={profile.location}
-                        onChange={handleInput}
-                        className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
-                      />
-                    </div>
                   </div>
                 </div>
 
                 <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm md:p-6">
                   <div className="mb-5 flex items-center gap-2">
                     <Bell className="h-4 w-4 text-emerald-700" />
-                    <h2 className="text-lg font-semibold text-slate-900">
-                      Notifications
-                    </h2>
+                    <h2 className="text-lg font-semibold text-slate-900">Notifications</h2>
                   </div>
 
                   <div className="space-y-3">
                     <label className="flex items-center justify-between rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3">
-                      <span className="text-sm font-medium text-slate-700">Order updates via email</span>
+                      <span className="text-sm font-medium text-slate-700">Order updates</span>
                       <input
                         type="checkbox"
-                        checked={notifications.orderUpdates}
+                        checked={preferences.notifyOrder}
                         onChange={(e) =>
-                          setNotifications((prev) => ({ ...prev, orderUpdates: e.target.checked }))
+                          setPreferences((prev) => ({ ...prev, notifyOrder: e.target.checked }))
                         }
                         className="h-4 w-4 rounded border-emerald-300 text-emerald-700 focus:ring-emerald-500"
                       />
                     </label>
                     <label className="flex items-center justify-between rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3">
-                      <span className="text-sm font-medium text-slate-700">Low stock alerts</span>
+                      <span className="text-sm font-medium text-slate-700">Wishlist price alerts</span>
                       <input
                         type="checkbox"
-                        checked={notifications.lowStock}
+                        checked={preferences.notifyWishlist}
                         onChange={(e) =>
-                          setNotifications((prev) => ({ ...prev, lowStock: e.target.checked }))
+                          setPreferences((prev) => ({ ...prev, notifyWishlist: e.target.checked }))
                         }
                         className="h-4 w-4 rounded border-emerald-300 text-emerald-700 focus:ring-emerald-500"
                       />
                     </label>
                     <label className="flex items-center justify-between rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3">
-                      <span className="text-sm font-medium text-slate-700">Weekly performance summary</span>
+                      <span className="text-sm font-medium text-slate-700">Promotions and offers</span>
                       <input
                         type="checkbox"
-                        checked={notifications.weeklySummary}
+                        checked={preferences.notifyPromotions}
                         onChange={(e) =>
-                          setNotifications((prev) => ({ ...prev, weeklySummary: e.target.checked }))
-                        }
-                        className="h-4 w-4 rounded border-emerald-300 text-emerald-700 focus:ring-emerald-500"
-                      />
-                    </label>
-                    <label className="flex items-center justify-between rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3">
-                      <span className="text-sm font-medium text-slate-700">Promotional announcements</span>
-                      <input
-                        type="checkbox"
-                        checked={notifications.promo}
-                        onChange={(e) =>
-                          setNotifications((prev) => ({ ...prev, promo: e.target.checked }))
+                          setPreferences((prev) => ({ ...prev, notifyPromotions: e.target.checked }))
                         }
                         className="h-4 w-4 rounded border-emerald-300 text-emerald-700 focus:ring-emerald-500"
                       />
@@ -349,16 +316,13 @@ export default function Setting() {
 
               <div className="space-y-5">
                 <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm md:p-6">
-                  <h2 className="text-base font-semibold text-slate-900">Farmer Account</h2>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Keep your profile details updated so buyers can trust your listings.
-                  </p>
-
-                  <div className="mt-4 rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/40 p-5 text-center">
-                    <User className="mx-auto h-8 w-8 text-emerald-700" />
-                    <p className="mt-2 text-sm font-semibold text-emerald-800">{profile.name || "Farmer"}</p>
-                    <p className="text-xs text-slate-500">{profile.email || "Email unavailable"}</p>
+                  <div className="mb-4 flex items-center gap-2">
+                    <Wallet className="h-4 w-4 text-emerald-700" />
+                    <h2 className="text-base font-semibold text-slate-900">Buyer Account</h2>
                   </div>
+                  <p className="text-sm text-slate-500">
+                    Keep these details accurate for smooth checkout and delivery.
+                  </p>
                 </div>
 
                 <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm md:p-6">
@@ -419,8 +383,8 @@ export default function Setting() {
               </div>
             </section>
           )}
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

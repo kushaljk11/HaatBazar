@@ -1,5 +1,6 @@
 import {
     BarChart3,
+    CalendarDays,
     CircleHelp,
     LayoutGrid,
     Leaf,
@@ -17,6 +18,7 @@ const navItems = [
     { label: "Marketplace", icon: Store, Link: "/farmer/marketplace" },
     { label: "Add New Crop", icon: PlusCircle, Link: "/farmer/list-crops" },
     { label: "My Crops", icon: Leaf, Link: "/farmer/my-crops" },
+    { label: "Bookings", icon: CalendarDays, Link: "/farmer/bookings" },
     { label: "Orders", icon: ShoppingCart, Link: "/farmer/orders" },
     { label: "Settings", icon: Settings, Link: "/farmer/settings" },
 ];

@@ -253,10 +253,10 @@ export default function Dashboard() {
                     <p
                       className={`mt-1 text-xs font-semibold ${
                         order.status === "Delivered"
-                          ? "text-green-600"
+                          ? "text-emerald-800"
                           : order.status === "In Transit"
-                            ? "text-yellow-600"
-                            : "text-blue-600"
+                            ? "text-emerald-800"
+                            : "text-emerald-800"
                       }`}
                     >
                       Status: {order.status}
