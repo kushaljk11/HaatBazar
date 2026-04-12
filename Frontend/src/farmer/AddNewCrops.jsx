@@ -340,7 +340,7 @@ export default function AddNewCrops() {
                   <input
                     type="number"
                     min="0"
-                    placeholder="Rs. 0"
+                    placeholder="NPR 0"
                     className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}

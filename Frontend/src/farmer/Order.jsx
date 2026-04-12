@@ -100,7 +100,7 @@ export default function Orders() {
         },
         {
             title: "Total Order Value",
-            value: `Rs ${totalValue.toLocaleString()}`,
+            value: `NPR ${totalValue.toLocaleString()}`,
             icon: CircleDollarSign,
             tone: "bg-emerald-900 border-emerald-900",
             iconTone: "bg-white/15 text-white",
@@ -167,7 +167,7 @@ export default function Orders() {
                                             <td className="px-5 py-4 text-sm text-slate-700">{item?.buyerId?.name || "Buyer"}</td>
                                             <td className="px-5 py-4 text-sm text-slate-700">{item?.postId?.postTitle || "Produce"}</td>
                                             <td className="px-5 py-4 text-sm text-slate-700">{Number(item?.quantity || 0)} kg</td>
-                                            <td className="px-5 py-4 text-sm font-semibold text-slate-900">Rs {Number(item?.totalPrice || 0).toLocaleString()}</td>
+                                            <td className="px-5 py-4 text-sm font-semibold text-slate-900">NPR {Number(item?.totalPrice || 0).toLocaleString()}</td>
                                             <td className="px-5 py-4">
                                                 <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass[item?.orderStatus] || "bg-emerald-100 text-emerald-800"}`}>
                                                     {item?.orderStatus || "placed"}

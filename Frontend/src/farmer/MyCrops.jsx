@@ -129,7 +129,7 @@ export default function MyCrops() {
     },
     {
       label: "Potential Revenue",
-      value: `Rs. ${potentialRevenue.toLocaleString()}`,
+      value: `NPR ${potentialRevenue.toLocaleString()}`,
       note: "Estimated",
       icon: TrendingUp,
       tone: "bg-white border-emerald-100",
@@ -423,7 +423,7 @@ export default function MyCrops() {
                         </td>
 
                         <td className="px-5 py-4 text-sm font-semibold text-slate-900">
-                          Rs. {Number(crop?.price || 0)}
+                          NPR {Number(crop?.price || 0)}
                         </td>
 
                         <td className="px-5 py-4">

@@ -93,7 +93,7 @@ export default function MarketPlace() {
 
   function Card() {
     return (
-      <section className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
+      <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredPosts.map((item) => (
           <div
             key={item._id}
@@ -112,7 +112,7 @@ export default function MarketPlace() {
               <p className="text-sm text-slate-600">{item.category}</p>
               <div className="mt-2 flex items-center justify-between">
                 <span className="text-xl font-bold text-emerald-700">
-                  Rs {item.price}
+                  NPR {item.price}
                 </span>
                 <span className="text-sm text-slate-500">
                   Qty: {item.quantity} kg
@@ -150,7 +150,7 @@ export default function MarketPlace() {
       <Sidebar />
       <div className="flex h-full min-h-0 w-full flex-col">
         <Topbar />
-        <main className="h-full w-full overflow-y-auto bg-[#f9f9f9] p-6">
+        <main className="h-full w-full overflow-y-auto bg-[#f9f9f9] p-3 sm:p-6">
           <div>
             <h1 className="text-2xl font-semibold text-gray-800">
               Market Place
@@ -193,8 +193,8 @@ export default function MarketPlace() {
                 />
               </div>
 
-              <div className="flex shrink-0 items-center gap-3 whitespace-nowrap">
-                <select className="rounded-xl border border-emerald-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500">
+              <div className="flex w-full flex-wrap items-center gap-3 xl:w-auto xl:justify-end">
+                <select className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500 sm:w-auto">
                   <option>Sort: Latest</option>
                   <option>Price: Low to High</option>
                   <option>Price: High to Low</option>
@@ -204,7 +204,7 @@ export default function MarketPlace() {
                 <button
                   type="button"
                   onClick={() => setShowAdvanced((prev) => !prev)}
-                  className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 whitespace-nowrap"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 sm:w-auto"
                 >
                   <SlidersHorizontal className="h-4 w-4" />
                   {showAdvanced ? "Hide Advanced" : "Advanced Filters"}
@@ -253,7 +253,7 @@ export default function MarketPlace() {
 
                 <div className="space-y-1">
                   <label className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-                    Min Price (Rs)
+                    Min Price (NPR)
                   </label>
                   <input
                     type="number"
@@ -265,7 +265,7 @@ export default function MarketPlace() {
 
                 <div className="space-y-1">
                   <label className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-                    Max Price (Rs)
+                    Max Price (NPR)
                   </label>
                   <input
                     type="number"

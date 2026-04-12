@@ -87,7 +87,7 @@ export default function FarmerDashboard() {
       label: "Total Earnings",
       icon: FaMoneyBillWave,
       primary: false,
-      value: "$12,345",
+      value: "NPR 12,345",
       description: "Earnings in the last 30 days",
     },
     {
@@ -141,7 +141,7 @@ export default function FarmerDashboard() {
       product: "Organic Tomatoes",
       quantity: "15 KG",
       status: "Delivered",
-      amount: "Rs 1,200",
+      amount: "NPR 1,200",
     },
     {
       id: "#HK-9284",
@@ -150,7 +150,7 @@ export default function FarmerDashboard() {
       product: "Mountain Honey",
       quantity: "2 Liters",
       status: "Processing",
-      amount: "Rs 3,500",
+      amount: "NPR 3,500",
     },
     {
       id: "#HK-9289",
@@ -159,7 +159,7 @@ export default function FarmerDashboard() {
       product: "Buckwheat Flour",
       quantity: "10 KG",
       status: "Shipped",
-      amount: "Rs 850",
+      amount: "NPR 850",
     },
   ];
 
