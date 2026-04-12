@@ -21,13 +21,18 @@ dotenv.config();
 const app = express();
 const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 5000;
+const allowAllOrigins = process.env.CORS_ALLOW_ALL === "true";
+
+const normalizeOrigin = (value) => String(value || "").trim().replace(/\/$/, "");
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   "http://localhost:5173",
   "http://localhost:3000",
   "https://haatbazar.vercel.app",
-].filter(Boolean);
+]
+  .map(normalizeOrigin)
+  .filter(Boolean);
 
 const corsOptions = {
   origin(origin, callback) {
@@ -36,12 +41,17 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    if (allowedOrigins.includes(origin)) {
+    if (allowAllOrigins) {
+      return callback(null, true);
+    }
+
+    const normalizedOrigin = normalizeOrigin(origin);
+    if (allowedOrigins.includes(normalizedOrigin)) {
       return callback(null, true);
     }
 
     console.log("Blocked CORS origin:", origin);
-    return callback(new Error("Not allowed by CORS"));
+    return callback(null, false);
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -50,6 +60,7 @@ const corsOptions = {
 
 // MUST be before routes
 app.use(cors(corsOptions));
+// Express 5-safe equivalent of app.options("*", cors(corsOptions))
 app.options(/.*/, cors(corsOptions));
 app.use(express.json());
 const MONGO_URI = process.env.MONGO_URI;

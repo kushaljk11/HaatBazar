@@ -46,7 +46,7 @@ const buildQuotaFallbackReply = (retryMs) => {
 };
 
 router.post("/chat", async (req, res) => {
-  const { message, sessionId } = req.body;
+  const { message, sessionId } = req.body || {};
 
   if (!message || !sessionId) {
     return res.status(400).json({ error: "message and sessionId are required" });
