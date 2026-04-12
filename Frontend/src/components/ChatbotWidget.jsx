@@ -1,7 +1,13 @@
 import { useMemo, useState } from "react";
 import { Bot, MessageCircle, Send, X } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "/api" : "");
+const rawBase = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "/api" : "");
+const sanitizedBase = String(rawBase || "").replace(/\/+$/, "");
+const CHAT_ENDPOINT = sanitizedBase
+  ? sanitizedBase.endsWith("/api")
+    ? `${sanitizedBase}/chat`
+    : `${sanitizedBase}/api/chat`
+  : "";
 
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,7 +21,7 @@ export default function ChatbotWidget() {
   const onSend = async () => {
     if (!text.trim() || loading) return;
 
-    if (!API_BASE) {
+    if (!CHAT_ENDPOINT) {
       setMessages((prev) => [
         ...prev,
         {
@@ -32,7 +38,7 @@ export default function ChatbotWidget() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/chat`, {
+      const res = await fetch(CHAT_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input, sessionId }),
