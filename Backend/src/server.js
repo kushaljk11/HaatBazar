@@ -25,9 +25,13 @@ const allowAllOrigins = process.env.CORS_ALLOW_ALL === "true";
 const isolateCorsDebug = process.env.ISOLATE_CORS_DEBUG === "true";
 
 const normalizeOrigin = (value) => String(value || "").trim().replace(/\/$/, "");
+const isVercelDeploymentOrigin = (origin) => /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
 
 const allowedOrigins = [
-  "*",
+  process.env.FRONTEND_URL,
+  "https://haatbazar.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
 ]
   .map(normalizeOrigin)
   .filter(Boolean);
@@ -44,7 +48,7 @@ const corsOptions = {
     }
 
     const normalizedOrigin = normalizeOrigin(origin);
-    if (allowedOrigins.includes(normalizedOrigin)) {
+    if (allowedOrigins.includes(normalizedOrigin) || isVercelDeploymentOrigin(normalizedOrigin)) {
       return callback(null, true);
     }
 
@@ -60,6 +64,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 // Express 5-safe equivalent of app.options("*", cors(corsOptions))
 app.options(/.*/, cors(corsOptions));
+app.options("/api/chat", cors(corsOptions));
 app.use(express.json());
 const MONGO_URI = process.env.MONGO_URI;
 
