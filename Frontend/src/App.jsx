@@ -12,6 +12,8 @@ import MyCrops from "./farmer/MyCrops";
 import AddNewCrop from "./farmer/AddNewCrops";
 import Orders from "./farmer/Order";
 import Setting from "./farmer/Setting";
+import Dashboard from "./buyer/Dashboard";
+import Marketplace from "./buyer/Marketplace";
 
 function App() {
   // if (isCheckingAuth && !authUser)
@@ -31,11 +33,13 @@ function App() {
           <Route path="/aboutus" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
-          <Route path="/farmer/marketplace" element={<MarketPlace />} />
+          <Route path="/marketplace" element={<MarketPlace />} />
           <Route path="/farmer/my-crops" element={<MyCrops />} />
           <Route path="/farmer/list-crops" element={<AddNewCrop />} />
           <Route path="/farmer/orders" element={<Orders />} />
           <Route path="/farmer/settings" element={<Setting />} />
+          <Route path="/buyer/dashboard" element={<Dashboard />} />
+          <Route path="/buyer/marketplace" element={<Marketplace />} />
         </Routes>
       </BrowserRouter>
     </>

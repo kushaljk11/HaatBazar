@@ -1,7 +1,7 @@
 import login from "../../assets/login.jpg";
 import api from "../../utils/axios";
 import { useState } from "react";
-import { Toaster, toast } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
@@ -55,14 +55,6 @@ export default function Login() {
       );
     }
   };
-  <Toaster
-    position="top-center"
-    toastOptions={{
-      className: "bg-green-500 text-white",
-      duration: 3000,
-    }}
-  />;
-
   return (
     <main className="min-h-screen bg-stone-100 md:grid md:h-screen md:grid-cols-2 md:overflow-hidden">
       <section className="relative hidden h-screen md:block">
@@ -184,6 +176,7 @@ export default function Login() {
               <button
                 type="button"
                 className="font-semibold text-emerald-900 hover:text-emerald-800"
+                onClick={() => navigate("/register")}
               >
                 Register as a Farmer or Buyer
               </button>
