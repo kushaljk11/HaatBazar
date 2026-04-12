@@ -6,6 +6,9 @@ import router from "./routes/user.route.js";
 import postRouter from "./routes/post.route.js";
 import BookingRouter from "./routes/booking.route.js";
 import wishlistRouter from "./routes/wishlist.route.js";
+import orderRouter from "./routes/order.route.js";
+import paymentRouter from "./routes/payment.route.js";
+import paymentGatewayRouter from "./routes/paymentGateway.route.js";
 
 dotenv.config();
 
@@ -33,6 +36,9 @@ app.use("/api", router);
 app.use("/api", postRouter);
 app.use("/api", BookingRouter);
 app.use("/api/wishlist", wishlistRouter);
+app.use("/api", orderRouter);
+app.use("/api", paymentRouter);
+app.use("/api/payment", paymentGatewayRouter);
 
 
 app.listen(PORT, () => {

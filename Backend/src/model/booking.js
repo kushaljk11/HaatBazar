@@ -69,6 +69,10 @@ const bookingSchema = new mongoose.Schema({
         type: Date
     },
 
+    timeInterval: {
+        type: String
+    },
+
     deliveryAddress: {
         type: String
     },
