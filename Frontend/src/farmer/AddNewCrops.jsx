@@ -1,24 +1,45 @@
 import { ImagePlus, Leaf, PackageSearch, Trash2 } from "lucide-react";
 import Topbar from "./components/Topbar";
 import SideBar from "./components/Sidebar";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import api from "../utils/axios";
 import toast from "react-hot-toast";
+import {
+  getAllCities,
+  getDistrictsByProvince,
+  getMunicipalitiesByDistrict,
+  getProvinces,
+} from "../utils/locationUtils";
+import CityAutocomplete from "../components/CityAutocomplete";
 
 export default function AddNewCrops() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [location, setLocation] = useState("");
+  const [province, setProvince] = useState("");
+  const [district, setDistrict] = useState("");
   const [category, setCategory] = useState("vegetables");
   const [tag, setTag] = useState("vegetables");
   const [variety, setVariety] = useState("");
   const [contactInfo, setContactInfo] = useState("");
   const [minimumOrder, setMinimumOrder] = useState("");
   const [postImage, setPostImage] = useState("");
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const [quantity, setQuantity] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const provinces = useMemo(() => getProvinces(), []);
+  const districts = useMemo(() => getDistrictsByProvince(province), [province]);
+
+  const cityOptions = useMemo(() => {
+    if (district) {
+      return getMunicipalitiesByDistrict(district);
+    }
+
+    return getAllCities();
+  }, [district]);
 
   const fetchCreatePost = async () => {
     if (isSubmitting) return;
@@ -27,6 +48,7 @@ export default function AddNewCrops() {
       !title.trim() ||
       !description.trim() ||
       !location.trim() ||
+      !district.trim() ||
       !variety.trim() ||
       !contactInfo.trim() ||
       !postImage.trim() ||
@@ -44,12 +66,12 @@ export default function AddNewCrops() {
       setError("");
 
       const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-        const token = localStorage.getItem("token");
-        const userId = storedUser?.id;
+      const token = localStorage.getItem("token");
+      const userId = storedUser?.id;
 
-        if (!userId) {
-          return;
-        }
+      if (!userId) {
+        return;
+      }
       const toastId = toast.loading("Publishing crop...");
 
       const postData = {
@@ -57,7 +79,9 @@ export default function AddNewCrops() {
         postDescription: description.trim(),
         price: Number(price),
         quantity: Number(quantity),
-        postLocation: location,
+        postLocation: `${location.trim()}, ${district.trim()}`,
+        city: location.trim(),
+        district: district.trim(),
         category,
         variety: variety.trim(),
         contactInfo: contactInfo.trim(),
@@ -68,7 +92,7 @@ export default function AddNewCrops() {
 
       const response = await api.post("/create", postData, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+      });
 
       toast.success("Post created successfully!", { id: toastId });
       console.log("Post created successfully:", response.data);
@@ -78,12 +102,18 @@ export default function AddNewCrops() {
       setPrice("");
       setQuantity("");
       setLocation("");
+      setProvince("");
+      setDistrict("");
       setCategory("vegetables");
       setTag("vegetables");
       setVariety("");
       setContactInfo("");
       setMinimumOrder("");
       setPostImage("");
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 600);
     } catch (err) {
       console.error("Error creating post:", err);
       const message =
@@ -93,6 +123,43 @@ export default function AddNewCrops() {
       toast.error(message);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleImageUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    try {
+      setIsImageUploading(true);
+      setError("");
+
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await api.post("/image/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      const imageUrl = response?.data?.imageUrl;
+      if (!imageUrl) {
+        throw new Error("Image upload failed");
+      }
+
+      setPostImage(imageUrl);
+      toast.success("Image uploaded successfully");
+    } catch (uploadError) {
+      const message =
+        uploadError?.response?.data?.message ||
+        uploadError?.response?.data?.error ||
+        "Failed to upload image";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setIsImageUploading(false);
+      event.target.value = "";
     }
   };
 
@@ -187,21 +254,59 @@ export default function AddNewCrops() {
 
                 <div>
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Address of Cultivation
+                    Province
                   </label>
                   <select
                     className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
+                    value={province}
+                    onChange={(e) => {
+                      setProvince(e.target.value);
+                      setDistrict("");
+                      setLocation("");
+                    }}
                   >
-                    <option value="">Select location</option>
-                    <option value="Kathmandu, Nepal">Kathmandu, Nepal</option>
-                    <option value="Lalitpur, Nepal">Lalitpur, Nepal</option>
-                    <option value="Bhaktapur, Nepal">Bhaktapur, Nepal</option>
-                    <option value="Pokhara, Nepal">Pokhara, Nepal</option>
-                    <option value="Biratnagar, Nepal">Biratnagar, Nepal</option>
-                    <option value="Birgunj, Nepal">Birgunj, Nepal</option>
+                    <option value="">Select province</option>
+                    {provinces.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
                   </select>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    District
+                  </label>
+                  <select
+                    className="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
+                    value={district}
+                    onChange={(e) => {
+                      setDistrict(e.target.value);
+                      setLocation("");
+                    }}
+                    disabled={!province}
+                  >
+                    <option value="">Select district</option>
+                    {districts.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    City / Municipality
+                  </label>
+                  <CityAutocomplete
+                    value={location}
+                    onChange={setLocation}
+                    options={cityOptions}
+                    placeholder="Type city name"
+                    inputClassName="w-full rounded-xl border border-emerald-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white"
+                  />
                 </div>
 
                 <div>
@@ -287,7 +392,7 @@ export default function AddNewCrops() {
 
               <div className="mb-4">
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Primary Image URL
+                  Primary Image URL or Upload
                 </label>
                 <input
                   type="text"
@@ -296,6 +401,18 @@ export default function AddNewCrops() {
                   value={postImage}
                   onChange={(e) => setPostImage(e.target.value)}
                 />
+                <div className="mt-2 flex items-center gap-3">
+                  <label className="inline-flex cursor-pointer items-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    {isImageUploading ? "Uploading..." : "Upload from device"}
+                  </label>
+                  <span className="text-xs text-slate-500">Uses Cloudinary storage</span>
+                </div>
               </div>
 
               <div className="grid gap-3 md:grid-cols-12">
@@ -363,10 +480,10 @@ export default function AddNewCrops() {
                 <button
                   type="button"
                   className="rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isImageUploading}
                   onClick={fetchCreatePost}
                 >
-                  {isSubmitting ? "Publishing..." : "Publish Crop"}
+                  {isSubmitting ? "Publishing..." : isImageUploading ? "Waiting for image..." : "Publish Crop"}
                 </button>
               </div>
             </section>

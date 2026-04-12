@@ -1,5 +1,26 @@
 import { Link, NavLink } from "react-router-dom";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/logo.svg";
+
+const parseTokenPayload = (token) => {
+  try {
+    const payloadPart = token.split(".")[1];
+    if (!payloadPart) return null;
+
+    const base64 = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+    const decoded = atob(padded);
+
+    return JSON.parse(decoded);
+  } catch {
+    return null;
+  }
+};
+
+const getDashboardPath = (role) => {
+  if (role === "admin") return "/admin/dashboard";
+  if (role === "farmer") return "/farmer/dashboard";
+  return "/buyer/dashboard";
+};
 
 const navItemClass = ({ isActive }) =>
   [
@@ -10,6 +31,14 @@ const navItemClass = ({ isActive }) =>
   ].join(" ");
 
 export default function Topbar() {
+  const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+  const token = localStorage.getItem("token") || storedUser?.token;
+
+  const payload = token ? parseTokenPayload(token) : null;
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  const hasValidToken = Boolean(token) && Boolean(payload?.exp) && payload.exp > nowInSeconds;
+  const dashboardPath = getDashboardPath(storedUser?.role || payload?.role);
+
   return (
     <header className="sticky top-0 z-40 border-b border-stone-200/80 bg-white">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-2.5 lg:px-7">
@@ -17,7 +46,8 @@ export default function Topbar() {
           to="/"
           className="inline-flex items-center"
         >
-          <img src={logo} alt="HaatBazar" className="h-10 w-auto" />
+          <img src={logo} alt="HaatBazar" className="h-8 w-auto" />
+          <span className="ml-2 text-xl font-semibold text-emerald-900">HaatBazar</span>
         </Link>
 
         <nav
@@ -39,18 +69,29 @@ export default function Topbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            to="/login"
-            className="px-1 text-[15px] font-medium text-stone-500 transition hover:text-emerald-700"
-          >
-            Login
-          </Link>
-          <Link
-            to="/register"
-            className="rounded-full bg-emerald-900 px-6 py-2 text-[15px] font-semibold text-white transition hover:bg-emerald-800"
-          >
-            Register
-          </Link>
+          {hasValidToken ? (
+            <Link
+              to={dashboardPath}
+              className="rounded-full bg-emerald-900 px-6 py-2 text-[15px] font-semibold text-white transition hover:bg-emerald-800"
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="px-1 text-[15px] font-medium text-stone-500 transition hover:text-emerald-700"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="rounded-full bg-emerald-900 px-6 py-2 text-[15px] font-semibold text-white transition hover:bg-emerald-800"
+              >
+                Register
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

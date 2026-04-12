@@ -9,9 +9,11 @@ import {
     Settings,
     ShoppingCart,
     Store,
+    X,
 } from "lucide-react";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/logo.svg";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const navItems = [
     { label: "Dashboard", icon: LayoutGrid, Link: "/farmer/dashboard" },
@@ -24,7 +26,21 @@ const navItems = [
 ];
 
 export default function Sidebar() {
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
     const currentPath = window.location.pathname;
+
+    useEffect(() => {
+        const toggleSidebar = () => setIsMobileOpen((prev) => !prev);
+        const closeSidebar = () => setIsMobileOpen(false);
+
+        window.addEventListener("toggle-farmer-sidebar", toggleSidebar);
+        window.addEventListener("close-farmer-sidebar", closeSidebar);
+
+        return () => {
+            window.removeEventListener("toggle-farmer-sidebar", toggleSidebar);
+            window.removeEventListener("close-farmer-sidebar", closeSidebar);
+        };
+    }, []);
     
     const logout = () => {
         localStorage.removeItem("token");
@@ -35,7 +51,27 @@ export default function Sidebar() {
     
 
     return (
-        <aside className="flex h-screen w-64 flex-col border-r border-emerald-100 bg-white px-4 py-5">
+        <>
+        {isMobileOpen ? (
+            <button
+                type="button"
+                className="fixed inset-0 z-40 bg-slate-900/30 md:hidden"
+                onClick={() => setIsMobileOpen(false)}
+                aria-label="Close sidebar overlay"
+            />
+        ) : null}
+
+        <aside className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-col border-r border-emerald-100 bg-white px-4 py-5 transition-transform duration-300 md:static md:translate-x-0 ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
+            <div className="mb-2 flex items-center justify-end md:hidden">
+                <button
+                    type="button"
+                    onClick={() => setIsMobileOpen(false)}
+                    className="rounded-lg border border-emerald-200 p-2 text-emerald-800"
+                    aria-label="Close farmer menu"
+                >
+                    <X className="h-4 w-4" />
+                </button>
+            </div>
             <div className="mb-6 flex items-center gap-3">
                 <div className="grid h-10 w-10 place-items-center overflow-hidden rounded-full bg-emerald-800/10">
                     <img src={logo} alt="HamroKrishi" className="h-7 w-7 object-contain" />
@@ -59,7 +95,10 @@ export default function Sidebar() {
                         <button
                             key={item.label}
                             type="button"
-                            onClick={() => (window.location.href = item.Link)}
+                            onClick={() => {
+                                setIsMobileOpen(false);
+                                window.location.href = item.Link;
+                            }}
                             className={[
                                 "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition",
                                 isActive
@@ -87,6 +126,7 @@ export default function Sidebar() {
 
                 <button
                     type="button"
+                    onClick={() => (window.location.href = "/contact")}
                     className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-emerald-800/80 transition hover:bg-emerald-500 hover:text-white"
                 >
                     <CircleHelp className="h-4 w-4" />
@@ -103,5 +143,6 @@ export default function Sidebar() {
                 </button>
             </div>
         </aside>
+        </>
     );
 }

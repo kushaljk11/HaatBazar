@@ -1,5 +1,6 @@
 import {
     CalendarCheck,
+    X,
     CreditCard,
     CircleHelp,
     Heart,
@@ -10,8 +11,9 @@ import {
     ShoppingCart,
     Store,
 } from "lucide-react";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/logo.svg";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const navItems = [
     { label: "Dashboard", icon: LayoutGrid, route: "/buyer/dashboard" },
@@ -24,7 +26,21 @@ const navItems = [
 ];
 
 export default function Sidebar() {
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
     const currentPath = window.location.pathname;
+
+    useEffect(() => {
+        const toggleSidebar = () => setIsMobileOpen((prev) => !prev);
+        const closeSidebar = () => setIsMobileOpen(false);
+
+        window.addEventListener("toggle-buyer-sidebar", toggleSidebar);
+        window.addEventListener("close-buyer-sidebar", closeSidebar);
+
+        return () => {
+            window.removeEventListener("toggle-buyer-sidebar", toggleSidebar);
+            window.removeEventListener("close-buyer-sidebar", closeSidebar);
+        };
+    }, []);
     
     const logout = () => {
         localStorage.removeItem("token");
@@ -33,14 +49,39 @@ export default function Sidebar() {
     };
 
     return (
-        <aside className="flex h-screen w-64 flex-col border-r border-emerald-100 bg-white px-4 py-5">
+        <>
+        {isMobileOpen ? (
+            <button
+                type="button"
+                className="fixed inset-0 z-40 bg-slate-900/30 md:hidden"
+                onClick={() => setIsMobileOpen(false)}
+                aria-label="Close sidebar overlay"
+            />
+        ) : null}
+
+        <aside
+            className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-col border-r border-emerald-100 bg-white px-4 py-5 transition-transform duration-300 md:static md:translate-x-0 ${
+                isMobileOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
+        >
+            <div className="mb-2 flex items-center justify-end md:hidden">
+                <button
+                    type="button"
+                    onClick={() => setIsMobileOpen(false)}
+                    className="rounded-lg border border-emerald-200 p-2 text-emerald-800"
+                    aria-label="Close buyer menu"
+                >
+                    <X className="h-4 w-4" />
+                </button>
+            </div>
             <div className="mb-6 flex items-center gap-3">
                 <div className="grid h-10 w-10 place-items-center overflow-hidden rounded-full bg-emerald-800/10">
                     <img src={logo} alt="HamroKrishi" className="h-7 w-7 object-contain" />
                 </div>
                 <div>
-                    <p className="text-[22px] font-semibold leading-5 text-emerald-900">HamroKrishi</p>
-                    <p className="text-[11px] text-emerald-700/75">Modern Agronomist</p>
+                    <p className="text-[22px] font-semibold leading-5 text-emerald-900">HaatBazar</p>
+                    <p className="text-[11px] text-emerald-500">स्वदेशी स्वाद</p>
+
                 </div>
             </div>
 
@@ -57,7 +98,10 @@ export default function Sidebar() {
                         <button
                             key={item.label}
                             type="button"
-                            onClick={() => (window.location.href = item.route)}
+                            onClick={() => {
+                                setIsMobileOpen(false);
+                                window.location.href = item.route;
+                            }}
                             className={[
                                 "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition",
                                 isActive
@@ -85,6 +129,7 @@ export default function Sidebar() {
 
                 <button
                     type="button"
+                    onClick={() => (window.location.href = "/contact")}
                     className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-emerald-800/80 transition hover:bg-emerald-500 hover:text-white"
                 >
                     <CircleHelp className="h-4 w-4" />
@@ -101,5 +146,6 @@ export default function Sidebar() {
                 </button>
             </div>
         </aside>
+        </>
     );
 }

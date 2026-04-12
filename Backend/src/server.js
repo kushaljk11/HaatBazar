@@ -2,6 +2,7 @@ import express from "express"
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import http from "http";
 import router from "./routes/user.route.js";
 import postRouter from "./routes/post.route.js";
 import BookingRouter from "./routes/booking.route.js";
@@ -9,10 +10,16 @@ import wishlistRouter from "./routes/wishlist.route.js";
 import orderRouter from "./routes/order.route.js";
 import paymentRouter from "./routes/payment.route.js";
 import paymentGatewayRouter from "./routes/paymentGateway.route.js";
+import adminRouter from "./routes/admin.route.js";
+import notificationRouter from "./routes/notification.route.js";
+import imageRouter from "./routes/image.route.js";
+import chatRouter from "./routes/chat.route.js";
+import { initSocket } from "./lib/socket.js";
 
 dotenv.config();
 
 const app = express();
+const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
@@ -39,8 +46,13 @@ app.use("/api/wishlist", wishlistRouter);
 app.use("/api", orderRouter);
 app.use("/api", paymentRouter);
 app.use("/api/payment", paymentGatewayRouter);
+app.use("/api", adminRouter);
+app.use("/api", notificationRouter);
+app.use("/api/image", imageRouter);
+app.use("/api", chatRouter);
 
+initSocket(httpServer);
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

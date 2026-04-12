@@ -11,6 +11,14 @@ const PostSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    city: {
+      type: String,
+      default: "",
+    },
+    district: {
+      type: String,
+      default: "",
+    },
     postTitle: {
       type: String,
       required: true,

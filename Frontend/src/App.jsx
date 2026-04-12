@@ -6,6 +6,7 @@ import Login from "./pages/auth/Login";
 import Landing from "./pages/Landing";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Profile from "./pages/Profile";
 import FarmerDashboard from "./farmer/Dashboard";
 import MarketPlace from "./farmer/MarketPlace";
 import MyCrops from "./farmer/MyCrops";
@@ -24,6 +25,16 @@ import BuyerSetting from "./buyer/Setting";
 import PaymentForm from "./buyer/payment/PaymentForm";
 import PaymentSuccess from "./buyer/payment/PaymentSuccess";
 import PaymentFailure from "./buyer/payment/PaymentFailure";
+import AdminDashboard from "./admin/Dashboard";
+import AdminUserManagement from "./admin/UserManagement";
+import AdminPostApproval from "./admin/PostApproval";
+import AdminBooking from "./admin/Booking";
+import AdminOrder from "./admin/Order";
+import AdminPayment from "./admin/Payment";
+import AdminSetting from "./admin/Setting";
+import AdminLog from "./admin/Log";
+import ChatbotWidget from "./components/ChatbotWidget";
+import PwaInstallPrompt from "./components/PwaInstallPrompt";
 
 function App() {
   // if (isCheckingAuth && !authUser)
@@ -42,8 +53,10 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/aboutus" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
           <Route path="/marketplace" element={<MarketPlace />} />
+          <Route path="/farmer/marketplace" element={<MarketPlace />} />
           <Route path="/farmer/my-crops" element={<MyCrops />} />
           <Route path="/farmer/list-crops" element={<AddNewCrop />} />
           <Route path="/farmer/orders" element={<Orders />} />
@@ -60,7 +73,18 @@ function App() {
           <Route path="/buyer/payment/success" element={<PaymentSuccess />} />
           <Route path="/buyer/payment/failure" element={<PaymentFailure />} />
           <Route path="/buyer/settings" element={<BuyerSetting />} />
+
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<AdminUserManagement />} />
+          <Route path="/admin/posts" element={<AdminPostApproval />} />
+          <Route path="/admin/bookings" element={<AdminBooking />} />
+          <Route path="/admin/orders" element={<AdminOrder />} />
+          <Route path="/admin/payments" element={<AdminPayment />} />
+          <Route path="/admin/log" element={<AdminLog />} />
+          <Route path="/admin/settings" element={<AdminSetting />} />
         </Routes>
+        <PwaInstallPrompt />
+        <ChatbotWidget />
       </BrowserRouter>
     </>
   );

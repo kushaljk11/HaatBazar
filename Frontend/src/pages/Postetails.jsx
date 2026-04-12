@@ -275,23 +275,6 @@ export default function Postetails() {
         },
     ];
 
-    const feedback = [
-        {
-            id: 1,
-            quote:
-                '"The texture is incredibly creamy. Perfect for roasting. You can really taste the mountain soil."',
-            user: "Sunil K. - Verified Buyer",
-            initials: "SK",
-        },
-        {
-            id: 2,
-            quote:
-                '"Arrived fresh in sustainable packaging. High quality potatoes, but price is a bit premium."',
-            user: "Roshni P. - Verified Buyer",
-            initials: "RP",
-        },
-    ];
-
     const highlights = useMemo(
         () => [
             {
@@ -388,35 +371,29 @@ export default function Postetails() {
                     <div className="pt-2">
                         <div className="mb-4 flex items-center justify-between gap-3">
                             <h2 className="text-2xl font-semibold text-stone-800">
-                                Community Feedback
+                                Product Description
                             </h2>
-                            <button
-                                type="button"
-                                className="text-sm font-semibold text-emerald-700 transition hover:text-emerald-800"
-                            >
-                                Write a Review
-                            </button>
                         </div>
 
-                        <div className="grid gap-4 md:grid-cols-2">
-                            {feedback.map((item) => (
-                                <article
-                                    key={item.id}
-                                    className="rounded-3xl bg-[#eef0ee] p-5 text-stone-700 shadow-[0_8px_20px_rgba(0,0,0,0.06)]"
-                                >
-                                    <p className="text-base tracking-[0.2em] text-[#6c9232]">★★★★★</p>
-                                    <p className="mt-3 text-sm italic leading-relaxed text-stone-600">
-                                        {item.quote}
-                                    </p>
-                                    <div className="mt-4 flex items-center gap-2">
-                                        <span className="flex size-7 items-center justify-center rounded-full bg-[#d8e8d2] text-xs font-bold text-[#507c2d]">
-                                            {item.initials}
-                                        </span>
-                                        <p className="text-xs font-semibold">{item.user}</p>
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
+                        <article className="rounded-3xl bg-[#eef0ee] p-5 text-stone-700 shadow-[0_8px_20px_rgba(0,0,0,0.06)] sm:p-6">
+                            <p className="text-sm leading-7 text-stone-600 sm:text-base">
+                                {displayPost.description || "No description available for this listing."}
+                            </p>
+                            <div className="mt-4 grid gap-2 text-xs text-stone-500 sm:grid-cols-2">
+                                <p>
+                                    <span className="font-semibold text-stone-700">Category:</span> {displayPost.category}
+                                </p>
+                                <p>
+                                    <span className="font-semibold text-stone-700">Variety:</span> {displayPost.variety}
+                                </p>
+                                <p>
+                                    <span className="font-semibold text-stone-700">Location:</span> {displayPost.location}
+                                </p>
+                                <p>
+                                    <span className="font-semibold text-stone-700">Min Order:</span> {displayPost.minimumOrder} kg
+                                </p>
+                            </div>
+                        </article>
                     </div>
                 </div>
 
@@ -531,38 +508,6 @@ export default function Postetails() {
                         ))}
                     </div>
 
-                    <article className="rounded-3xl bg-[#eceeed] p-5 shadow-[0_8px_18px_rgba(0,0,0,0.06)] sm:p-6">
-                        <div className="flex items-center gap-3">
-                            <img
-                                src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=120&q=80"
-                                alt="Farmer profile"
-                                className="size-14 rounded-full object-cover ring-2 ring-[#79a35a]/40"
-                            />
-                            <div>
-                                <h3 className="text-xl font-semibold text-stone-800">{displayPost.seller}</h3>
-                                <p className="text-xs text-stone-500">
-                                    Seller from {displayPost.location}
-                                </p>
-                                <p className="mt-1 inline-flex rounded-full bg-[#d8ebcb] px-2 py-0.5 text-xs font-semibold text-[#4d7c2e]">
-                                    Min Order: {displayPost.minimumOrder} kg
-                                </p>
-                            </div>
-                        </div>
-
-                        {displayPost.sellerEmail ? (
-                            <p className="mt-2 text-xs text-stone-500">Contact: {displayPost.sellerEmail}</p>
-                        ) : null}
-
-                        <p className="mt-4 text-xs italic leading-relaxed text-stone-600 sm:text-sm">
-                            "{displayPost.description}"
-                        </p>
-                        <button
-                            type="button"
-                            className="mt-4 text-sm font-semibold text-emerald-800 transition hover:text-emerald-900"
-                        >
-                            Contact Seller
-                        </button>
-                    </article>
                 </div>
             </div>
 

@@ -1,4 +1,5 @@
 import heroImage from "../assets/hero.jpg";
+import { Link } from "react-router-dom";
 import {
   FaHandshake,
   FaLeaf,
@@ -11,7 +12,30 @@ import FarmerSuccessSection from "../components/landing/FarmerSuccess";
 import DeliveryCoverage from "../components/landing/DeliveryCoverage";
 import Footer from "../components/landing/Footer";
 
+function GrassCluster({ className = "", mirrored = false }) {
+  return (
+    <div
+      className={`pointer-events-none absolute ${className}`}
+      aria-hidden="true"
+      style={{ transform: mirrored ? "scaleX(-1)" : "none" }}
+    >
+      <div className="absolute bottom-0 left-0 h-5 w-24 rounded-full bg-emerald-300/70 blur-sm" />
+      <span className="absolute bottom-0 left-1 h-9 w-3 origin-bottom -rotate-[14deg] rounded-t-full bg-emerald-400" />
+      <span className="absolute bottom-0 left-6 h-14 w-4 origin-bottom -rotate-[5deg] rounded-t-full bg-emerald-500" />
+      <span className="absolute bottom-0 left-11 h-16 w-4 origin-bottom rotate-[4deg] rounded-t-full bg-emerald-700" />
+      <span className="absolute bottom-0 left-16 h-12 w-3 origin-bottom rotate-[10deg] rounded-t-full bg-teal-500" />
+      <span className="absolute bottom-0 left-20 h-10 w-3 origin-bottom rotate-[18deg] rounded-t-full bg-emerald-500" />
+    </div>
+  );
+}
+
 export default function Landing() {
+  const trustStats = [
+    { label: "Local Farms", value: "300+" },
+    { label: "Daily Deliveries", value: "1.2K" },
+    { label: "Avg. Fulfillment", value: "98%" },
+  ];
+
   const featured = [
     {
       id: 1,
@@ -58,35 +82,70 @@ export default function Landing() {
     <>
       <Topbar />
       <main>
-        <section className="w-full bg-emerald-50">
-          <div className="mx-auto grid min-h-[82vh] w-full max-w-7xl items-center gap-12 px-6 py-16 sm:px-10 lg:grid-cols-2 lg:px-14 lg:py-20">
-            <div className="max-w-xl">
-              <h1 className="text-4xl font-semibold leading-tight text-stone-900 sm:text-5xl lg:text-6xl">
-                Locally sourced in
-                <br />
-                Kathmandu, Nepal
+        <section className="relative overflow-hidden bg-[#f3f4f1]">
+          <div className="mx-auto flex min-h-[82vh] w-full max-w-[1400px] flex-col items-center gap-10 px-6 py-14 lg:flex-row lg:gap-14 lg:px-10 lg:py-16">
+            <div className="w-full lg:w-[34%]">
+              <h1 className="text-5xl font-semibold leading-[1.03] tracking-tight text-slate-900 sm:text-5xl">
+                Smart <span className="text-emerald-800">Agriculture</span>,
+                <span className="block mt-2 font-normal">For the Future.</span>
               </h1>
 
-              <p className="mt-6 max-w-lg text-base leading-relaxed text-stone-800 sm:text-lg">
-                Hamro Krishi Bazaar connects you directly with trusted local
-                farmers. Shop fresh produce, support sustainable farming, and
-                bring healthier choices to your table.
+              <p className="mt-7 max-w-[420px] text-[15px] leading-7 text-slate-700">
+                Monitor crop supply, verify farmer listings, and buy with
+                confidence through a transparent marketplace built for modern
+                food distribution in Nepal.
               </p>
 
-              <button
-                type="button"
-                className="mt-8 rounded-full bg-green-800 px-9 py-3 text-lg font-semibold text-white transition hover:bg-stone-800"
-              >
-                Shop Now
-              </button>
+              <div className="mt-7 flex flex-wrap items-center gap-3">
+                <Link
+                  to="/register"
+                  className="rounded-full bg-emerald-800 text-white px-6 py-2.5 text-sm font-semibold transition hover:bg-emerald-700"
+                >
+                  Register Now
+                </Link>
+                <Link
+                  to="/marketplace"
+                  className="rounded-full border border-slate-400 bg-transparent px-6 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-white"
+                >
+                  View Marketplace
+                </Link>
+              </div>
+
+              <div className="mt-9 grid max-w-sm grid-cols-3 gap-5">
+                {trustStats.map((item) => (
+                  <div key={item.label}>
+                    <p className="text-2xl font-semibold text-slate-900">
+                      {item.value}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">{item.label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="mx-auto h-[360px] w-full max-w-[480px] overflow-hidden rounded-3xl border-4 border-stone-900/10 shadow-2xl sm:h-[430px] sm:max-w-[560px] lg:h-[520px]">
-              <img
-                src={heroImage}
-                alt="Fresh local produce"
-                className="h-full w-full object-cover"
-              />
+            <div className="relative w-full lg:w-[66%]">
+              <div className="relative rounded-2xl border border-slate-300 bg-white p-3 shadow-2xl">
+                <img
+                  src={heroImage}
+                  alt="Marketplace network overview"
+                  className="h-[280px] w-full rounded-xl object-cover sm:h-[360px] lg:h-[460px]"
+                />
+
+                <div className="absolute left-6 top-6 w-[230px] rounded-xl border border-slate-200 bg-white/95 p-3 shadow-lg backdrop-blur">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
+                    Live Network
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-slate-600">
+                    Fresh produce demand up by 18% in Kathmandu and 11% in
+                    Pokhara.
+                  </p>
+                </div>
+              </div>
+
+              <div className="absolute -bottom-5 left-6 hidden h-16 w-16 rounded-full bg-emerald-300/60 blur-xl md:block" />
+              <div className="absolute -bottom-8 right-10 hidden h-20 w-20 rounded-full bg-teal-300/50 blur-xl md:block" />
+              <GrassCluster className="-bottom-2 left-0 hidden h-16 w-24 md:block" />
+              <GrassCluster className="-bottom-2 right-2 hidden h-16 w-24 md:block" mirrored />
             </div>
           </div>
         </section>

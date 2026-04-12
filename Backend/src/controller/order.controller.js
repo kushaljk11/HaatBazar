@@ -3,6 +3,7 @@ import Booking from "../model/booking.js";
 import Order from "../model/order.js";
 import Payment from "../model/payment.js";
 import Post from "../model/post.js";
+import { notifyRole, notifyUser } from "../utils/notification.helper.js";
 
 const makeCode = (prefix) =>
   `${prefix}-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
@@ -105,6 +106,22 @@ export const createOrder = async (req, res) => {
       .populate({ path: "postId", populate: { path: "user", select: "name email" } })
       .populate("bookingId")
       .populate("paymentId");
+
+    await notifyRole({
+      role: "admin",
+      type: "order_created",
+      title: "New Order",
+      message: `New order ${order.orderId} was placed`,
+      data: { orderId: order._id, buyerId, postId },
+    });
+
+    await notifyUser({
+      userId: post.user?._id || post.user,
+      type: "order_created",
+      title: "New Order",
+      message: `A buyer placed order ${order.orderId} for ${post.postTitle}`,
+      data: { orderId: order._id, postId },
+    });
 
     return res.status(201).json({
       message: "Order created successfully",
@@ -259,6 +276,14 @@ export const acceptOrderByFarmer = async (req, res) => {
       .populate({ path: "postId", populate: { path: "user", select: "name email" } })
       .populate("paymentId")
       .populate("bookingId");
+
+    await notifyUser({
+      userId: order.buyerId,
+      type: "order_accepted",
+      title: "Order Accepted",
+      message: `Your order ${order.orderId} has been accepted by farmer`,
+      data: { orderId: order._id },
+    });
 
     return res.json({ message: "Order accepted successfully", order: populated });
   } catch (error) {

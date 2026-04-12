@@ -1,6 +1,16 @@
 import User from "../model/user.model.js";
 import Post from "../model/post.js";
 import mongoose from "mongoose";
+import { notifyRole, notifyUser } from "../utils/notification.helper.js";
+import { normalizePostLocation } from "../utils/location.normalizer.js";
+
+const parseLegacyLocation = (value) => {
+  const raw = String(value || "").trim();
+  if (!raw) return { city: "", district: "" };
+
+  const [city = "", district = ""] = raw.split(",").map((item) => item.trim());
+  return { city, district: district || city };
+};
 
 // to create a post
 export const createPost = async (req, res) => {
@@ -20,11 +30,20 @@ export const createPost = async (req, res) => {
     } = req.body;
     const userId = req.user.id;
 
+    const fallback = parseLegacyLocation(postLocation);
+    const normalized = normalizePostLocation({
+      city: req.body?.city || fallback.city,
+      district: req.body?.district || fallback.district,
+    });
+    const normalizedPostLocation = `${normalized.city}, ${normalized.district}`;
+
     const newPost = new Post({
       user: userId,
       postTitle,
       postDescription,
-      postLocation,
+      postLocation: normalizedPostLocation,
+      city: normalized.city,
+      district: normalized.district,
       postImage,
       price,
       quantity,
@@ -47,6 +66,14 @@ export const createPost = async (req, res) => {
     res
       .status(201)
       .json({ message: "Post created successfully", post: newPost });
+
+    await notifyRole({
+      role: "admin",
+      type: "post_created",
+      title: "New Post Created",
+      message: `${newPost.postTitle} was created and is waiting for approval`,
+      data: { postId: newPost._id, farmerId: userId },
+    });
   } catch (error) {
     res.error("Error creating post:", error);
     console.error("Error creating post:", error);
@@ -130,7 +157,21 @@ export const getPostsByUserId = async (req, res) => {
 export const updatePost = async (req, res) => {
   try {
     const postId = req.params.id;
-    const updatedPost = await Post.findByIdAndUpdate(postId, req.body, { new: true });
+    const payload = { ...req.body };
+
+    if (payload.postLocation || payload.city || payload.district) {
+      const fallback = parseLegacyLocation(payload.postLocation);
+      const normalized = normalizePostLocation({
+        city: payload.city || fallback.city,
+        district: payload.district || fallback.district,
+      });
+
+      payload.postLocation = `${normalized.city}, ${normalized.district}`;
+      payload.city = normalized.city;
+      payload.district = normalized.district;
+    }
+
+    const updatedPost = await Post.findByIdAndUpdate(postId, payload, { new: true });
     if (!updatedPost) {
       return res.status(404).json({ message: "Post not found" });
     }
@@ -203,6 +244,14 @@ export const updatePostApproval = async (req, res) => {
 
     if(adminApproval === "Approved") {
       await User.findByIdAndUpdate(updatedPost.user, { $push: { approvedPosts: updatedPost._id } });
+
+      await notifyUser({
+        userId: updatedPost.user,
+        type: "post_approved",
+        title: "Post Approved",
+        message: `Your post ${updatedPost.postTitle} has been approved`,
+        data: { postId: updatedPost._id },
+      });
     }
 
     res.status(200).json({ message: "Post approval updated successfully", post: updatedPost });

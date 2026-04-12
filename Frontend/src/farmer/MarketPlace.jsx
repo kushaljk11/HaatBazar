@@ -1,13 +1,25 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import Topbar from "./components/Topbar";
 import Sidebar from "./components/Sidebar";
 import api from "../utils/axios";
+import { getAllCities } from "../utils/locationUtils";
+import CityAutocomplete from "../components/CityAutocomplete";
 
 export default function MarketPlace() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [marketPosts, setMarketPosts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
+
+  const cityOptions = useMemo(() => getAllCities(), []);
+
+  const filteredPosts = useMemo(() => {
+    if (!cityFilter.trim()) return marketPosts;
+    return marketPosts.filter((item) =>
+      String(item?.postLocation || "").toLowerCase().includes(cityFilter.toLowerCase()),
+    );
+  }, [cityFilter, marketPosts]);
 
   // Fetch marketplace posts from the backend
   useEffect(() => {
@@ -81,8 +93,8 @@ export default function MarketPlace() {
 
   function Card() {
     return (
-      <section className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {marketPosts.map((item) => (
+      <section className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
+        {filteredPosts.map((item) => (
           <div
             key={item._id}
             className="rounded-2xl border border-emerald-100 bg-white shadow-sm transition hover:shadow-md"
@@ -123,7 +135,7 @@ export default function MarketPlace() {
           </div>
         ))}
 
-        {marketPosts.length === 0 && (
+        {filteredPosts.length === 0 && (
           <div className="col-span-full rounded-2xl border border-emerald-100 bg-white p-6 text-center text-slate-600">
             No marketplace posts found.
           </div>
@@ -168,14 +180,16 @@ export default function MarketPlace() {
                   <option>Dairy</option>
                 </select>
 
-                <select className="rounded-xl border border-emerald-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500 xl:col-span-3">
-                  <option>City: All</option>
-                  <option>Kathmandu</option>
-                  <option>Lalitpur</option>
-                  <option>Bhaktapur</option>
-                  <option>Pokhara</option>
-                  <option>Chitwan</option>
-                </select>
+                <CityAutocomplete
+                  value={cityFilter}
+                  onChange={setCityFilter}
+                  options={cityOptions}
+                  placeholder="City: All"
+                  showAllOption
+                  allOptionLabel="City: All"
+                  containerClassName="xl:col-span-3"
+                  inputClassName="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500"
+                />
               </div>
 
               <div className="flex shrink-0 items-center gap-3 whitespace-nowrap">

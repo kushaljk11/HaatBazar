@@ -1,15 +1,84 @@
-import { useEffect, useState } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { LocateFixed, Search, SlidersHorizontal } from "lucide-react";
 import Topbar from "./components/Topbar";
 import Sidebar from "./components/Sidebar";
 import api from "../utils/axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { getAllCities } from "../utils/locationUtils";
+import CityAutocomplete from "../components/CityAutocomplete";
 
 export default function MarketPlace() {
   const navigate = useNavigate();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [marketPosts, setMarketPosts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
+  const [isLocating, setIsLocating] = useState(false);
+
+  const cityOptions = useMemo(() => getAllCities(), []);
+
+  const filteredPosts = useMemo(() => {
+    if (!cityFilter.trim()) return marketPosts;
+    return marketPosts.filter((item) =>
+      String(item?.postLocation || "").toLowerCase().includes(cityFilter.toLowerCase()),
+    );
+  }, [cityFilter, marketPosts]);
+
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
+          );
+          const data = await response.json();
+
+          const detectedCity =
+            data?.address?.city ||
+            data?.address?.town ||
+            data?.address?.village ||
+            data?.address?.municipality ||
+            data?.address?.county ||
+            "";
+
+          if (!detectedCity) {
+            toast.error("Could not detect your city from location.");
+            return;
+          }
+
+          const normalizedDetectedCity = detectedCity.toLowerCase();
+          const matchedCity = cityOptions.find((city) => {
+            const normalizedCity = city.toLowerCase();
+            return (
+              normalizedCity.includes(normalizedDetectedCity) ||
+              normalizedDetectedCity.includes(normalizedCity)
+            );
+          });
+
+          const finalCity = matchedCity || detectedCity;
+          setCityFilter(finalCity);
+          toast.success(`Showing products near ${finalCity}`);
+        } catch {
+          toast.error("Failed to detect city from location.");
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      () => {
+        setIsLocating(false);
+        toast.error("Location access denied.");
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
 
   // Fetch marketplace posts from the backend
   useEffect(() => {
@@ -83,8 +152,8 @@ export default function MarketPlace() {
 
   function Card() {
     return (
-      <section className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {marketPosts.map((item) => (
+      <section className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
+        {filteredPosts.map((item) => (
           <div
             key={item._id}
             className="cursor-pointer rounded-2xl border border-emerald-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
@@ -96,7 +165,7 @@ export default function MarketPlace() {
               className="h-48 w-full rounded-t-2xl object-cover"
             />
             <div className="p-4">
-              <h3 className="text-lg font-bold text-slate-800">
+              <h3 className="text-lg font-semibold text-slate-800">
                 {item.postTitle}
               </h3>
               <p className="text-sm text-slate-600">{item.category}</p>
@@ -136,7 +205,7 @@ export default function MarketPlace() {
           </div>
         ))}
 
-        {marketPosts.length === 0 && (
+        {filteredPosts.length === 0 && (
           <div className="col-span-full rounded-2xl border border-emerald-100 bg-white p-6 text-center text-slate-600">
             No marketplace posts found.
           </div>
@@ -181,17 +250,29 @@ export default function MarketPlace() {
                   <option>Dairy</option>
                 </select>
 
-                <select className="rounded-xl border border-emerald-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500 xl:col-span-3">
-                  <option>City: All</option>
-                  <option>Kathmandu</option>
-                  <option>Lalitpur</option>
-                  <option>Bhaktapur</option>
-                  <option>Pokhara</option>
-                  <option>Chitwan</option>
-                </select>
+                <CityAutocomplete
+                  value={cityFilter}
+                  onChange={setCityFilter}
+                  options={cityOptions}
+                  placeholder="City: All"
+                  showAllOption
+                  allOptionLabel="City: All"
+                  containerClassName="xl:col-span-3"
+                  inputClassName="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500"
+                />
               </div>
 
               <div className="flex shrink-0 items-center gap-3 whitespace-nowrap">
+                <button
+                  type="button"
+                  onClick={handleUseMyLocation}
+                  disabled={isLocating}
+                  className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2.5 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  <LocateFixed className="h-4 w-4" />
+                  {isLocating ? "Detecting..." : "Use My Location"}
+                </button>
+
                 <select className="rounded-xl border border-emerald-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500">
                   <option>Sort: Latest</option>
                   <option>Price: Low to High</option>

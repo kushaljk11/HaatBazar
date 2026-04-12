@@ -1,6 +1,8 @@
 import Payment from "../model/payment.js";
 import Order from "../model/order.js";
 import Booking from "../model/booking.js";
+import Post from "../model/post.js";
+import { notifyRole, notifyUser } from "../utils/notification.helper.js";
 
 const makeCode = (prefix) =>
   `${prefix}-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
@@ -81,6 +83,26 @@ export const payForOrder = async (req, res) => {
       paymentMethod: ["wallet", "cod"].includes(method) ? method : "online",
       paymentStatus: "paid",
     });
+
+    const post = await Post.findById(order.postId).select("postTitle user");
+
+    await notifyRole({
+      role: "admin",
+      type: "payment_success",
+      title: "Payment Received",
+      message: `Payment completed for order ${order.orderId}`,
+      data: { orderId: order._id, paymentId: payment._id, amount: order.totalPrice },
+    });
+
+    if (post?.user) {
+      await notifyUser({
+        userId: post.user,
+        type: "payment_success",
+        title: "Payment Received",
+        message: `You received payment for ${post.postTitle}`,
+        data: { orderId: order._id, paymentId: payment._id, amount: order.totalPrice },
+      });
+    }
 
     return res.json({ message: "Payment successful", payment });
   } catch (error) {

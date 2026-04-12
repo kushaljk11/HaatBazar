@@ -5,8 +5,10 @@ import {
   Pencil,
   Plus,
   Sprout,
+  Trash2,
   TrendingUp,
   Warehouse,
+  X,
 } from "lucide-react";
 import TopBar from "./components/Topbar";
 import SideBar from "./components/Sidebar";
@@ -19,6 +21,16 @@ export default function MyCrops() {
   const [crops, setCrops] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [editingCrop, setEditingCrop] = useState(null);
+  const [editForm, setEditForm] = useState({
+    postTitle: "",
+    postDescription: "",
+    postLocation: "",
+    price: "",
+    quantity: "",
+    variety: "",
+    minimumOrder: "",
+  });
 
   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
   const token = localStorage.getItem("token") || storedUser?.token;
@@ -177,6 +189,94 @@ export default function MyCrops() {
     return "Active";
   };
 
+  const openEditModal = (crop) => {
+    setEditingCrop(crop);
+    setEditForm({
+      postTitle: crop?.postTitle || "",
+      postDescription: crop?.postDescription || "",
+      postLocation: crop?.postLocation || "",
+      price: String(crop?.price || ""),
+      quantity: String(crop?.quantity || ""),
+      variety: crop?.variety || "",
+      minimumOrder: String(crop?.minimumOrder || ""),
+    });
+  };
+
+  const closeEditModal = () => {
+    setEditingCrop(null);
+    setEditForm({
+      postTitle: "",
+      postDescription: "",
+      postLocation: "",
+      price: "",
+      quantity: "",
+      variety: "",
+      minimumOrder: "",
+    });
+  };
+
+  const handleEditInput = (event) => {
+    const { name, value } = event.target;
+    setEditForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdateCrop = async () => {
+    if (!editingCrop?._id || !token) {
+      toast.error("Unable to update crop. Please login again.");
+      return;
+    }
+
+    try {
+      const payload = {
+        postTitle: editForm.postTitle.trim(),
+        postDescription: editForm.postDescription.trim(),
+        postLocation: editForm.postLocation.trim(),
+        price: Number(editForm.price),
+        quantity: Number(editForm.quantity),
+        variety: editForm.variety.trim(),
+        minimumOrder: Number(editForm.minimumOrder),
+      };
+
+      const response = await api.put(`/updatepost/${editingCrop._id}`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const updated = response?.data?.post;
+      if (updated) {
+        setCrops((prev) => prev.map((item) => (item._id === updated._id ? updated : item)));
+      }
+
+      toast.success("Crop updated successfully");
+      closeEditModal();
+    } catch (updateError) {
+      toast.error(updateError?.response?.data?.message || "Failed to update crop");
+    }
+  };
+
+  const handleDeleteCrop = async (crop) => {
+    if (!crop?._id || !token) {
+      toast.error("Unable to delete crop. Please login again.");
+      return;
+    }
+
+    const isConfirmed = window.confirm(`Delete \"${crop?.postTitle || "this crop"}\"?`);
+    if (!isConfirmed) {
+      return;
+    }
+
+    try {
+      await api.delete(`/deletepost/${crop._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setCrops((prev) => prev.filter((item) => item._id !== crop._id));
+      setTotalListing((prev) => Math.max(0, prev - 1));
+      toast.success("Crop deleted successfully");
+    } catch (deleteError) {
+      toast.error(deleteError?.response?.data?.message || "Failed to delete crop");
+    }
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <SideBar />
@@ -284,6 +384,8 @@ export default function MyCrops() {
                       crops.map((crop) => {
                         const statusLabel = getStatusLabel(crop);
                         const quantity = Number(crop?.quantity || 0);
+                        const isOwner =
+                          String(crop?.user?._id || crop?.user || "") === String(userId || "");
                         const utilization = Math.min(
                           100,
                           Math.round((quantity / maxQuantity) * 100),
@@ -346,14 +448,28 @@ export default function MyCrops() {
 
                         <td className="px-5 py-4">
                           <div className="flex items-center justify-center gap-2">
-                            <button className="rounded-lg border border-emerald-200 p-2 text-emerald-700 transition hover:bg-emerald-50">
+                            <button
+                              className="rounded-lg border border-emerald-200 p-2 text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"
+                              onClick={() => openEditModal(crop)}
+                              disabled={!isOwner}
+                              title="Edit crop"
+                            >
                               <Pencil className="h-4 w-4" />
                             </button>
-                            <button className="rounded-lg border border-emerald-200 p-2 text-emerald-700 transition hover:bg-emerald-50">
+                            <button
+                              className="rounded-lg border border-emerald-200 p-2 text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"
+                              disabled={!isOwner}
+                              title="Toggle action"
+                            >
                               <Leaf className="h-4 w-4" />
                             </button>
-                            <button className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-100">
-                              <Plus className="h-4 w-4" />
+                            <button
+                              className="rounded-lg border border-rose-200 p-2 text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
+                              onClick={() => handleDeleteCrop(crop)}
+                              disabled={!isOwner}
+                              title="Delete crop"
+                            >
+                              <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
                         </td>
@@ -389,6 +505,100 @@ export default function MyCrops() {
               </div>
             </section>
           </section>
+
+          {editingCrop ? (
+            <div className="fixed inset-0 z-50 grid place-items-center bg-slate-900/40 p-4">
+              <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-5 shadow-xl md:p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-slate-900">Edit Crop</h3>
+                  <button
+                    type="button"
+                    onClick={closeEditModal}
+                    className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-100"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <input
+                    name="postTitle"
+                    value={editForm.postTitle}
+                    onChange={handleEditInput}
+                    placeholder="Crop title"
+                    className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
+                  />
+                  <input
+                    name="variety"
+                    value={editForm.variety}
+                    onChange={handleEditInput}
+                    placeholder="Variety"
+                    className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
+                  />
+                  <input
+                    name="postLocation"
+                    value={editForm.postLocation}
+                    onChange={handleEditInput}
+                    placeholder="Location"
+                    className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
+                  />
+                  <input
+                    type="number"
+                    name="price"
+                    min="0"
+                    value={editForm.price}
+                    onChange={handleEditInput}
+                    placeholder="Price"
+                    className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
+                  />
+                  <input
+                    type="number"
+                    name="quantity"
+                    min="0"
+                    value={editForm.quantity}
+                    onChange={handleEditInput}
+                    placeholder="Quantity"
+                    className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
+                  />
+                  <input
+                    type="number"
+                    name="minimumOrder"
+                    min="1"
+                    value={editForm.minimumOrder}
+                    onChange={handleEditInput}
+                    placeholder="Minimum order"
+                    className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
+                  />
+                </div>
+
+                <textarea
+                  name="postDescription"
+                  rows="4"
+                  value={editForm.postDescription}
+                  onChange={handleEditInput}
+                  placeholder="Description"
+                  className="mt-3 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
+                />
+
+                <div className="mt-4 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={closeEditModal}
+                    className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleUpdateCrop}
+                    className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </main>
       </div>
     </div>

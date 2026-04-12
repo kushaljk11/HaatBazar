@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import api from "../utils/axios";
 
 export default function FarmerDashboard() {
+  const storedUser = JSON.parse(localStorage.getItem("user") || "null");
   const [activeListingCount, setActiveListingCount] = useState(0);
   const [myPost, setMyPost] = useState([]);
   const [recentLogs, setRecentLogs] = useState([]);
@@ -193,9 +194,9 @@ export default function FarmerDashboard() {
 
         <div className="h-full w-full overflow-y-auto bg-[#f9f9f9]">
           <section className="p-6 pb-0">
-            <div>
-              <h1 className="text-2xl font-semibold">Welcome back, User!</h1>
-              <p className="text-slate-600">
+            <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-700 rounded-2xl p-6 text-white shadow-sm">
+              <h1 className="text-2xl font-semibold">Welcome back, {storedUser?.name || "Farmer"}!</h1>
+              <p className="text-white">
                 Manage your crops and orders from here.
               </p>
             </div>

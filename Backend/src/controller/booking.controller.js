@@ -1,6 +1,7 @@
 import Booking from "../model/booking.js";
 import Payment from "../model/payment.js";
 import Post from "../model/post.js";
+import { notifyRole, notifyUser } from "../utils/notification.helper.js";
 
 // Create a new booking
 export const createBooking = async (req, res) => {
@@ -74,6 +75,22 @@ export const createBooking = async (req, res) => {
     });
     await booking.save();
 
+    await notifyRole({
+      role: "admin",
+      type: "booking_created",
+      title: "New Booking Request",
+      message: `A booking request was created for ${post.postTitle}`,
+      data: { bookingId: booking._id, postId: post._id },
+    });
+
+    await notifyUser({
+      userId: post.user,
+      type: "booking_created",
+      title: "New Booking Request",
+      message: `A buyer requested booking for ${post.postTitle}`,
+      data: { bookingId: booking._id, postId: post._id },
+    });
+
     post.quantity = Math.max(availableQty - parsedQty, 0);
     post.status = post.quantity === 0 ? "Sold Out" : "Available";
     await post.save();
@@ -114,6 +131,14 @@ export const acceptBookingByFarmer = async (req, res) => {
 
     booking.status = "confirmed";
     await booking.save();
+
+    await notifyUser({
+      userId: booking.buyerId,
+      type: "booking_accepted",
+      title: "Booking Accepted",
+      message: `Your booking ${booking.bookingId} has been accepted by the farmer`,
+      data: { bookingId: booking._id },
+    });
 
     const populated = await Booking.findById(booking._id)
       .populate("buyerId", "name email")
