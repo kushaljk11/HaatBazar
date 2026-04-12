@@ -46,25 +46,25 @@ const buildQuotaFallbackReply = (retryMs) => {
 };
 
 router.post("/chat", async (req, res) => {
-  const { message, sessionId } = req.body || {};
-
-  if (!message || !sessionId) {
-    return res.status(400).json({ error: "message and sessionId are required" });
-  }
-
-  if (!process.env.GEMINI_API_KEY) {
-    return res.status(500).json({ error: "GEMINI_API_KEY is not configured" });
-  }
-
-  if (Date.now() < quotaBlockedUntil) {
-    const retryMs = quotaBlockedUntil - Date.now();
-    return res.json({
-      reply: buildQuotaFallbackReply(retryMs),
-      degraded: true,
-    });
-  }
-
   try {
+    const { message, sessionId } = req.body || {};
+
+    if (!message || !sessionId) {
+      return res.status(400).json({ error: "message and sessionId are required" });
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: "GEMINI_API_KEY is not configured" });
+    }
+
+    if (Date.now() < quotaBlockedUntil) {
+      const retryMs = quotaBlockedUntil - Date.now();
+      return res.json({
+        reply: buildQuotaFallbackReply(retryMs),
+        degraded: true,
+      });
+    }
+
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const history = sessions.get(sessionId) || [];
     let reply = "";

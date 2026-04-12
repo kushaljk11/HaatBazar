@@ -20,16 +20,14 @@ dotenv.config();
 
 const app = express();
 const httpServer = http.createServer(app);
-const PORT = process.env.PORT || 5000;
+const DEFAULT_PORT = Number(process.env.PORT || 5000);
 const allowAllOrigins = process.env.CORS_ALLOW_ALL === "true";
+const isolateCorsDebug = process.env.ISOLATE_CORS_DEBUG === "true";
 
 const normalizeOrigin = (value) => String(value || "").trim().replace(/\/$/, "");
 
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "https://haatbazar.vercel.app",
+  "*",
 ]
   .map(normalizeOrigin)
   .filter(Boolean);
@@ -41,7 +39,7 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    if (allowAllOrigins) {
+    if (allowAllOrigins || isolateCorsDebug) {
       return callback(null, true);
     }
 
@@ -65,29 +63,57 @@ app.options(/.*/, cors(corsOptions));
 app.use(express.json());
 const MONGO_URI = process.env.MONGO_URI;
 
-mongoose
-  .connect(MONGO_URI)
-  .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.log(err));
+if (!isolateCorsDebug) {
+  mongoose
+    .connect(MONGO_URI)
+    .then(() => console.log("MongoDB Connected"))
+    .catch((err) => console.log(err));
+} else {
+  console.log("ISOLATE_CORS_DEBUG=true -> Skipping MongoDB connection");
+}
 
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
-app.use("/api", router);
-app.use("/api", postRouter);
-app.use("/api", BookingRouter);
-app.use("/api/wishlist", wishlistRouter);
-app.use("/api", orderRouter);
-app.use("/api", paymentRouter);
-app.use("/api/payment", paymentGatewayRouter);
-app.use("/api", adminRouter);
-app.use("/api", notificationRouter);
-app.use("/api/image", imageRouter);
+if (!isolateCorsDebug) {
+  app.use("/api", router);
+  app.use("/api", postRouter);
+  app.use("/api", BookingRouter);
+  app.use("/api/wishlist", wishlistRouter);
+  app.use("/api", orderRouter);
+  app.use("/api", paymentRouter);
+  app.use("/api/payment", paymentGatewayRouter);
+  app.use("/api", adminRouter);
+  app.use("/api", notificationRouter);
+  app.use("/api/image", imageRouter);
+}
 app.use("/api", Chatrouter);
 
-initSocket(httpServer);
+if (!isolateCorsDebug) {
+  initSocket(httpServer);
+} else {
+  console.log("ISOLATE_CORS_DEBUG=true -> Skipping Socket.IO initialization");
+}
 
-httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+let currentPort = DEFAULT_PORT;
+
+const startServer = (port) => {
+  currentPort = port;
+  httpServer.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+};
+
+httpServer.on("error", (error) => {
+  if (error?.code === "EADDRINUSE") {
+    const fallbackPort = currentPort + 1;
+    console.warn(`Port ${currentPort} is in use. Retrying on port ${fallbackPort}...`);
+    startServer(fallbackPort);
+    return;
+  }
+
+  console.error("Server startup error:", error);
 });
+
+startServer(DEFAULT_PORT);
