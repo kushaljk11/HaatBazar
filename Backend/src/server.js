@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import router from "./routes/user.route.js";
 import postRouter from "./routes/post.route.js";
+import BookingRouter from "./routes/booking.route.js";
+import wishlistRouter from "./routes/wishlist.route.js";
 
 dotenv.config();
 
@@ -29,7 +31,8 @@ app.get("/", (req, res) => {
 
 app.use("/api", router);
 app.use("/api", postRouter);
-
+app.use("/api", BookingRouter);
+app.use("/api/wishlist", wishlistRouter);
 
 
 app.listen(PORT, () => {
