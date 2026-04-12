@@ -346,6 +346,7 @@ export default function Postetails() {
                         <img
                             src={displayPost.image}
                             alt={displayPost.title}
+                            loading="lazy"
                             className="h-[360px] w-full object-cover sm:h-[420px]"
                         />
                     </div>
@@ -359,6 +360,7 @@ export default function Postetails() {
                                 <img
                                     src={item.image}
                                     alt={item.label}
+                                    loading="lazy"
                                     className="h-24 w-full object-cover transition duration-300 group-hover:scale-105 sm:h-28"
                                 />
                                 <span className="absolute inset-x-2 bottom-2 rounded-full bg-white/85 px-2 py-1 text-center text-[11px] font-semibold text-stone-700 backdrop-blur-sm">

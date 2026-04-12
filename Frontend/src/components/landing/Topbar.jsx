@@ -1,3 +1,5 @@
+import { Menu, UserRound, X } from "lucide-react";
+import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import logo from "../../assets/logo.svg";
 
@@ -31,6 +33,7 @@ const navItemClass = ({ isActive }) =>
   ].join(" ");
 
 export default function Topbar() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
   const token = localStorage.getItem("token") || storedUser?.token;
 
@@ -68,7 +71,7 @@ export default function Topbar() {
           </NavLink>
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="hidden items-center gap-3 md:flex">
           {hasValidToken ? (
             <Link
               to={dashboardPath}
@@ -93,7 +96,92 @@ export default function Topbar() {
             </>
           )}
         </div>
+
+        <div className="flex items-center gap-2 md:hidden">
+          <Link
+            to={hasValidToken ? dashboardPath : "/login"}
+            className="grid h-10 w-10 place-items-center rounded-full bg-emerald-900 text-white"
+            aria-label={hasValidToken ? "Open dashboard" : "Open login"}
+          >
+            <UserRound className="h-5 w-5" />
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            className="grid h-10 w-10 place-items-center rounded-full border border-emerald-200 text-emerald-900"
+            aria-label="Toggle mobile navigation"
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
+
+      {isMobileMenuOpen ? (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="absolute inset-0 bg-black/30"
+            aria-label="Close mobile menu overlay"
+          />
+
+          <aside className="absolute right-0 top-0 h-full w-[78%] max-w-[320px] border-l border-emerald-100 bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-emerald-100 px-5 py-4">
+              <p className="text-sm font-semibold uppercase tracking-wide text-emerald-800">Menu</p>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="grid h-9 w-9 place-items-center rounded-full border border-emerald-200 text-emerald-900"
+                aria-label="Close mobile menu"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <nav className="flex flex-col gap-2 px-5 py-4" aria-label="Mobile navigation">
+              <NavLink
+                to="/"
+                end
+                className="rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 hover:bg-emerald-50 hover:text-emerald-800"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Home
+              </NavLink>
+              <NavLink
+                to="/aboutus"
+                className="rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 hover:bg-emerald-50 hover:text-emerald-800"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                About
+              </NavLink>
+              <NavLink
+                to="/marketplace"
+                className="rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 hover:bg-emerald-50 hover:text-emerald-800"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Marketplace
+              </NavLink>
+              <NavLink
+                to="/contact"
+                className="rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 hover:bg-emerald-50 hover:text-emerald-800"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Contact
+              </NavLink>
+              {!hasValidToken ? (
+                <Link
+                  to="/register"
+                  className="mt-2 rounded-full bg-emerald-900 px-4 py-2 text-center text-sm font-semibold text-white"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Register
+                </Link>
+              ) : null}
+            </nav>
+          </aside>
+        </div>
+      ) : null}
     </header>
   );
 }

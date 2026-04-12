@@ -1,4 +1,5 @@
 import heroImage from "../assets/hero.jpg";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   FaHandshake,
@@ -8,9 +9,14 @@ import {
   FaTools,
 } from "react-icons/fa";
 import Topbar from "../components/landing/Topbar";
-import FarmerSuccessSection from "../components/landing/FarmerSuccess";
-import DeliveryCoverage from "../components/landing/DeliveryCoverage";
-import Footer from "../components/landing/Footer";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+const FarmerSuccessSection = lazy(() => import("../components/landing/FarmerSuccess"));
+const DeliveryCoverage = lazy(() => import("../components/landing/DeliveryCoverage"));
+const Footer = lazy(() => import("../components/landing/Footer"));
+
+gsap.registerPlugin(ScrollTrigger);
 
 function GrassCluster({ className = "", mirrored = false }) {
   return (
@@ -30,6 +36,57 @@ function GrassCluster({ className = "", mirrored = false }) {
 }
 
 export default function Landing() {
+  const pageRef = useRef(null);
+  const heroContentRef = useRef(null);
+  const heroImageRef = useRef(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from(heroContentRef.current, {
+        y: 44,
+        opacity: 0,
+        duration: 0.9,
+        ease: "power3.out",
+      });
+
+      gsap.from(heroImageRef.current, {
+        y: 30,
+        scale: 0.96,
+        opacity: 0,
+        duration: 1,
+        delay: 0.1,
+        ease: "power3.out",
+      });
+
+      gsap.to(heroImageRef.current, {
+        yPercent: -8,
+        ease: "none",
+        scrollTrigger: {
+          trigger: heroImageRef.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: 1,
+        },
+      });
+
+      gsap.utils.toArray(".landing-reveal").forEach((section) => {
+        gsap.from(section, {
+          y: 50,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: section,
+            start: "top 82%",
+            once: true,
+          },
+        });
+      });
+    }, pageRef);
+
+    return () => ctx.revert();
+  }, []);
+
   const trustStats = [
     { label: "Local Farms", value: "300+" },
     { label: "Daily Deliveries", value: "1.2K" },
@@ -81,10 +138,10 @@ export default function Landing() {
   return (
     <>
       <Topbar />
-      <main>
-        <section className="relative overflow-hidden bg-[#f3f4f1]">
+      <main ref={pageRef}>
+        <section className="relative overflow-hidden bg-[#f3f4f1] landing-reveal">
           <div className="mx-auto flex min-h-[82vh] w-full max-w-[1400px] flex-col items-center gap-10 px-6 py-14 lg:flex-row lg:gap-14 lg:px-10 lg:py-16">
-            <div className="w-full lg:w-[34%]">
+            <div ref={heroContentRef} className="w-full lg:w-[34%]">
               <h1 className="text-5xl font-semibold leading-[1.03] tracking-tight text-slate-900 sm:text-5xl">
                 Smart <span className="text-emerald-800">Agriculture</span>,
                 <span className="block mt-2 font-normal">For the Future.</span>
@@ -123,7 +180,7 @@ export default function Landing() {
               </div>
             </div>
 
-            <div className="relative w-full lg:w-[66%]">
+            <div ref={heroImageRef} className="relative w-full lg:w-[66%]">
               <div className="relative rounded-2xl border border-slate-300 bg-white p-3 shadow-2xl">
                 <img
                   src={heroImage}
@@ -151,7 +208,7 @@ export default function Landing() {
         </section>
       </main>
       {/* featured collections section */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <section className="landing-reveal mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-semibold tracking-tight text-stone-800">
           Featured Collections
         </h2>
@@ -168,6 +225,7 @@ export default function Landing() {
                 <img
                   src={item.image}
                   alt={item.name}
+                  loading="lazy"
                   className="h-48 w-full object-cover"
                 />
                 <span className="absolute right-3 top-3 rounded-full bg-emerald-700 px-2.5 py-1 text-xs font-semibold text-white shadow-md">
@@ -196,7 +254,7 @@ export default function Landing() {
       </section>
 
       {/* why choose us section */}
-      <section className="w-full bg-emerald-50 py-16">
+      <section className="landing-reveal w-full bg-emerald-50 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-semibold tracking-tight text-stone-800">
             Why Choose Hamro Krishi Bazaar?
@@ -248,13 +306,21 @@ export default function Landing() {
       </section>
 
       {/* contact us section */}
-      <FarmerSuccessSection />
+      <div className="landing-reveal">
+        <Suspense fallback={<div className="h-20" />}>
+          <FarmerSuccessSection />
+        </Suspense>
+      </div>
 
       {/* delivery coverage section */}
-      <DeliveryCoverage />
+      <div className="landing-reveal">
+        <Suspense fallback={<div className="h-20" />}>
+          <DeliveryCoverage />
+        </Suspense>
+      </div>
 
       {/* testimonials section */}
-      <section className="bg-stone-50 px-4 py-16 sm:px-6 lg:px-8">
+      <section className="landing-reveal bg-stone-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-stone-800 sm:text-4xl">
@@ -300,7 +366,7 @@ export default function Landing() {
       </section>
 
       {/* final call to action section */}
-      <section className="bg-emerald-700 px-4 py-16 sm:px-6 lg:px-8">
+      <section className="landing-reveal bg-emerald-700 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl rounded-3xl bg-white px-6 py-12 text-center shadow-2xl sm:px-10">
           <h2 className="text-3xl font-semibold leading-tight text-emerald-800 sm:text-4xl">
             Join Nepal&apos;s Digital Agriculture Marketplace Today
@@ -350,7 +416,9 @@ export default function Landing() {
           </div> */}
         </div>
       </section>
-      <Footer />
+      <Suspense fallback={<div className="h-16" />}>
+        <Footer />
+      </Suspense>
     </>
   );
 }

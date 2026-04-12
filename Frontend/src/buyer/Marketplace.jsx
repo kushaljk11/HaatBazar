@@ -162,6 +162,7 @@ export default function MarketPlace() {
             <img
               src={item.postImage}
               alt={item.postTitle}
+              loading="lazy"
               className="h-48 w-full rounded-t-2xl object-cover"
             />
             <div className="p-4">

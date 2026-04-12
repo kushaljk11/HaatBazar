@@ -1,5 +1,4 @@
 import {
-  FaArrowUp,
   FaFacebookF,
   FaInstagram,
   FaLinkedinIn,
@@ -8,19 +7,18 @@ import {
   FaRegEnvelope,
   FaTwitter,
 } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import logo from "../../assets/logo.svg";
 
 export default function Footer() {
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   return (
     <footer className="bg-white border-t border-emerald-600 font-emerald text-emerald-900">
       <div className="mx-auto grid max-w-7xl gap-6 px-6 py-16 sm:px-10 lg:grid-cols-4 lg:gap-10">
         <div>
-          <div className="inline-flex items-center text-2xl font-semibold">
-            HaatBazar
-          </div>
+          <Link to="/" className="inline-flex items-center">
+            <img src={logo} alt="HaatBazar" className="h-10 w-auto" />
+            <span className="ml-2 text-2xl font-semibold">HaatBazar</span>
+          </Link>
           <p className="mt-6 max-w-xs text-base leading-relaxed text-emerald-800/90">
             Connecting Nepali farmers and buyers for fresher produce, fair pricing, and stronger communities.
           </p>
@@ -59,36 +57,36 @@ export default function Footer() {
         <div>
           <h3 className="text-3xl font-semibold">Quick Links</h3>
           <nav className="mt-5 flex flex-col gap-3 text-base text-emerald-800/90">
-            <a href="#" className="transition hover:text-emerald-900">
+            <Link to="/" className="transition hover:text-emerald-900">
+              Home
+            </Link>
+            <Link to="/aboutus" className="transition hover:text-emerald-900">
               About Us
-            </a>
-            <a href="#" className="transition hover:text-emerald-900">
-              Community
-            </a>
-            <a href="#" className="transition hover:text-emerald-900">
-              Events
-            </a>
-            <a href="#" className="transition hover:text-emerald-900">
-              Discussion Forum
-            </a>
-            <a href="#" className="transition hover:text-emerald-900">
-              Business Directory
-            </a>
-            <a href="#" className="transition hover:text-emerald-900">
-              Job Portal
-            </a>
+            </Link>
+            <Link to="/marketplace" className="transition hover:text-emerald-900">
+              Marketplace
+            </Link>
+            <Link to="/how-it-works" className="transition hover:text-emerald-900">
+              How It Works
+            </Link>
+            <Link to="/help-center" className="transition hover:text-emerald-900">
+              Help Center
+            </Link>
+            <Link to="/contact" className="transition hover:text-emerald-900">
+              Contact
+            </Link>
           </nav>
         </div>
 
         <div>
           <h3 className="text-3xl font-semibold">Services</h3>
           <ul className="mt-5 space-y-3 text-base text-emerald-800/90">
-            <li>Education</li>
-            <li>Healthcare</li>
-            <li>Volunteer</li>
-            <li>Mentorship</li>
-            <li>Career Counseling</li>
-            <li>Other</li>
+            <li>Farmer Crop Listing</li>
+            <li>Buyer Marketplace Discovery</li>
+            <li>Secure Payment Support</li>
+            <li>Booking and Order Tracking</li>
+            <li>Real-time Notifications</li>
+            <li>Admin Quality Moderation</li>
           </ul>
         </div>
 
@@ -129,23 +127,15 @@ export default function Footer() {
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-7 text-sm text-emerald-800/80 sm:flex-row sm:items-center sm:justify-between sm:px-10">
           <p>&copy; {new Date().getFullYear()} HaatBazar. All rights reserved.</p>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-            <a href="#" className="transition hover:text-emerald-900">
-              Privacy Policy
-            </a>
-            <a href="#" className="transition hover:text-emerald-900">
-              Terms & Conditions
-            </a>
-            <a href="#" className="transition hover:text-emerald-900">
-              Cookie Policy
-            </a>
-            {/* <button
-              type="button"
-              onClick={scrollToTop}
-              className="ml-auto grid h-11 w-11 place-items-center rounded-full bg-emerald-600 text-white transition hover:bg-emerald-500"
-              aria-label="Back to top"
-            >
-              <FaArrowUp />
-            </button> */}
+            <Link to="/help-center" className="transition hover:text-emerald-900">
+              Help
+            </Link>
+            <Link to="/contact" className="transition hover:text-emerald-900">
+              Support
+            </Link>
+            <Link to="/how-it-works" className="transition hover:text-emerald-900"> 
+              Platform Guide
+            </Link>
           </div>
         </div>
       </div>

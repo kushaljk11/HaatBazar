@@ -1,41 +1,47 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "react-hot-toast";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Register from "./pages/auth/Register";
 import Loader from "./components/Loader";
-import Login from "./pages/auth/Login";
 import Landing from "./pages/Landing";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import Profile from "./pages/Profile";
-import FarmerDashboard from "./farmer/Dashboard";
-import MarketPlace from "./farmer/MarketPlace";
-import MyCrops from "./farmer/MyCrops";
-import AddNewCrop from "./farmer/AddNewCrops";
-import Orders from "./farmer/Order";
-import FarmerBooking from "./farmer/Booking";
-import Setting from "./farmer/Setting";
-import Dashboard from "./buyer/Dashboard";
-import Marketplace from "./buyer/Marketplace";
-import Booking from "./buyer/Booking";
-import Wishlist from "./buyer/Wishlist";
-import Postetails from "./pages/Postetails";
-import BuyerOrders from "./buyer/Orders";
-import BuyerPayment from "./buyer/Payment";
-import BuyerSetting from "./buyer/Setting";
-import PaymentForm from "./buyer/payment/PaymentForm";
-import PaymentSuccess from "./buyer/payment/PaymentSuccess";
-import PaymentFailure from "./buyer/payment/PaymentFailure";
-import AdminDashboard from "./admin/Dashboard";
-import AdminUserManagement from "./admin/UserManagement";
-import AdminPostApproval from "./admin/PostApproval";
-import AdminBooking from "./admin/Booking";
-import AdminOrder from "./admin/Order";
-import AdminPayment from "./admin/Payment";
-import AdminSetting from "./admin/Setting";
-import AdminLog from "./admin/Log";
 import ChatbotWidget from "./components/ChatbotWidget";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
 import ProtectedRoute from "./components/ProtectedRoute";
+import LenisManager from "./components/LenisManager";
+
+const Register = lazy(() => import("./pages/auth/Register"));
+const Login = lazy(() => import("./pages/auth/Login"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const HelpCenter = lazy(() => import("./pages/HelpCenter"));
+const HowItWorks = lazy(() => import("./pages/HowItWorks"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Profile = lazy(() => import("./pages/Profile"));
+const FarmerDashboard = lazy(() => import("./farmer/Dashboard"));
+const MarketPlace = lazy(() => import("./farmer/MarketPlace"));
+const MyCrops = lazy(() => import("./farmer/MyCrops"));
+const AddNewCrop = lazy(() => import("./farmer/AddNewCrops"));
+const Orders = lazy(() => import("./farmer/Order"));
+const FarmerBooking = lazy(() => import("./farmer/Booking"));
+const Setting = lazy(() => import("./farmer/Setting"));
+const Dashboard = lazy(() => import("./buyer/Dashboard"));
+const Marketplace = lazy(() => import("./buyer/Marketplace"));
+const Booking = lazy(() => import("./buyer/Booking"));
+const Wishlist = lazy(() => import("./buyer/Wishlist"));
+const Postetails = lazy(() => import("./pages/Postetails"));
+const BuyerOrders = lazy(() => import("./buyer/Orders"));
+const BuyerPayment = lazy(() => import("./buyer/Payment"));
+const BuyerSetting = lazy(() => import("./buyer/Setting"));
+const PaymentForm = lazy(() => import("./buyer/payment/PaymentForm"));
+const PaymentSuccess = lazy(() => import("./buyer/payment/PaymentSuccess"));
+const PaymentFailure = lazy(() => import("./buyer/payment/PaymentFailure"));
+const AdminDashboard = lazy(() => import("./admin/Dashboard"));
+const AdminUserManagement = lazy(() => import("./admin/UserManagement"));
+const AdminPostApproval = lazy(() => import("./admin/PostApproval"));
+const AdminBooking = lazy(() => import("./admin/Booking"));
+const AdminOrder = lazy(() => import("./admin/Order"));
+const AdminPayment = lazy(() => import("./admin/Payment"));
+const AdminSetting = lazy(() => import("./admin/Setting"));
+const AdminLog = lazy(() => import("./admin/Log"));
 
 function App() {
   // if (isCheckingAuth && !authUser)
@@ -48,12 +54,22 @@ function App() {
     <>
       <BrowserRouter>
       <Toaster position="top-center" reverseOrder={false} />
+        <LenisManager />
+        <Suspense
+          fallback={
+            <div className="flex h-screen items-center justify-center bg-white">
+              <Loader className="size-10 animate-spin" />
+            </div>
+          }
+        >
         <Routes>
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Landing />} />
           <Route path="/aboutus" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/help-center" element={<HelpCenter />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/farmer/dashboard" element={<ProtectedRoute><FarmerDashboard /></ProtectedRoute>} />
           <Route path="/marketplace" element={<ProtectedRoute><MarketPlace /></ProtectedRoute>} />
@@ -85,7 +101,9 @@ function App() {
           <Route path="/admin/payments" element={<ProtectedRoute><AdminPayment /></ProtectedRoute>} />
           <Route path="/admin/log" element={<ProtectedRoute><AdminLog /></ProtectedRoute>} />
           <Route path="/admin/settings" element={<ProtectedRoute><AdminSetting /></ProtectedRoute>} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
         <PwaInstallPrompt />
         <ChatbotWidget />
       </BrowserRouter>
