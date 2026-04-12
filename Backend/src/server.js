@@ -22,11 +22,34 @@ const app = express();
 const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://haatbazar.vercel.app",
+];
+
 app.use(cors({
-  origin: "*",
+  origin: function (origin, callback) {
+    // allow tools like Postman or server-to-server calls
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    console.log("Blocked CORS origin:", origin);
+    return callback(null, false); // don't throw error
+  },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
+// MUST be before routes
+app.options("*", cors());
+app.use(cors(corsOptions));
+// app.options(/.*/, cors(corsOptions));
 app.use(express.json());
 const MONGO_URI = process.env.MONGO_URI;
 
