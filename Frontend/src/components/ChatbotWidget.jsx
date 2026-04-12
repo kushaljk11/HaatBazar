@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bot, MessageCircle, Send, X } from "lucide-react";
 
 const rawBase = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "/api" : "");
@@ -16,10 +16,24 @@ export default function ChatbotWidget() {
   ]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [degradedMode, setDegradedMode] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const sessionId = useMemo(() => crypto.randomUUID(), []);
 
+  useEffect(() => {
+    if (cooldownSeconds <= 0) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setCooldownSeconds((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [cooldownSeconds]);
+
   const onSend = async () => {
-    if (!text.trim() || loading) return;
+    if (!text.trim() || loading || cooldownSeconds > 0) return;
 
     if (!CHAT_ENDPOINT) {
       setMessages((prev) => [
@@ -50,8 +64,14 @@ export default function ChatbotWidget() {
         throw new Error(data?.error || "Chatbot request failed");
       }
 
+      setDegradedMode(Boolean(data?.degraded));
+      if (data?.retryAfterSeconds) {
+        setCooldownSeconds(Number(data.retryAfterSeconds));
+      }
+
       setMessages((prev) => [...prev, { role: "bot", text: data.reply || "No response" }]);
     } catch (error) {
+      setDegradedMode(true);
       setMessages((prev) => [
         ...prev,
         { role: "bot", text: error?.message || "Connection error. Please try again." },
@@ -66,9 +86,16 @@ export default function ChatbotWidget() {
       {isOpen ? (
         <div className="fixed bottom-20 right-5 z-50 w-[330px] overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-2xl">
           <div className="flex items-center justify-between bg-emerald-800 px-4 py-3 text-white">
-            <p className="inline-flex items-center gap-2 text-sm font-semibold">
-              <Bot className="h-4 w-4" /> HaatBazar AI Helper
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="inline-flex items-center gap-2 text-sm font-semibold">
+                <Bot className="h-4 w-4" /> HaatBazar AI Helper
+              </p>
+              {degradedMode ? (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">
+                  Fallback
+                </span>
+              ) : null}
+            </div>
             <button type="button" onClick={() => setIsOpen(false)}>
               <X className="h-4 w-4" />
             </button>
@@ -102,10 +129,10 @@ export default function ChatbotWidget() {
             <button
               type="button"
               onClick={onSend}
-              disabled={loading}
+              disabled={loading || cooldownSeconds > 0}
               className="inline-flex items-center rounded-xl bg-emerald-800 px-3 py-2 text-white disabled:opacity-60"
             >
-              <Send className="h-4 w-4" />
+              {cooldownSeconds > 0 ? `${cooldownSeconds}s` : <Send className="h-4 w-4" />}
             </button>
           </div>
         </div>
