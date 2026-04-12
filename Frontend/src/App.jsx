@@ -35,6 +35,7 @@ import AdminSetting from "./admin/Setting";
 import AdminLog from "./admin/Log";
 import ChatbotWidget from "./components/ChatbotWidget";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   // if (isCheckingAuth && !authUser)
@@ -53,35 +54,37 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/aboutus" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
-          <Route path="/marketplace" element={<MarketPlace />} />
-          <Route path="/farmer/marketplace" element={<MarketPlace />} />
-          <Route path="/farmer/my-crops" element={<MyCrops />} />
-          <Route path="/farmer/list-crops" element={<AddNewCrop />} />
-          <Route path="/farmer/orders" element={<Orders />} />
-          <Route path="/farmer/bookings" element={<FarmerBooking />} />
-          <Route path="/farmer/settings" element={<Setting />} />
-          <Route path="/buyer/dashboard" element={<Dashboard />} />
-          <Route path="/buyer/marketplace" element={<Marketplace />} />
-          <Route path="/buyer/marketplace/:id" element={<Postetails />} />
-          <Route path="/buyer/bookings" element={<Booking />} />
-          <Route path="/buyer/wishlist" element={<Wishlist />} />
-          <Route path="/buyer/orders" element={<BuyerOrders />} />
-          <Route path="/buyer/payment" element={<BuyerPayment />} />
-          <Route path="/buyer/payment/checkout" element={<PaymentForm />} />
-          <Route path="/buyer/payment/success" element={<PaymentSuccess />} />
-          <Route path="/buyer/payment/failure" element={<PaymentFailure />} />
-          <Route path="/buyer/settings" element={<BuyerSetting />} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/farmer/dashboard" element={<ProtectedRoute><FarmerDashboard /></ProtectedRoute>} />
+          <Route path="/marketplace" element={<ProtectedRoute><MarketPlace /></ProtectedRoute>} />
+          <Route path="/farmer/marketplace" element={<ProtectedRoute><MarketPlace /></ProtectedRoute>} />
+          <Route path="/farmer/my-crops" element={<ProtectedRoute><MyCrops /></ProtectedRoute>} />
+          <Route path="/farmer/list-crops" element={<ProtectedRoute><AddNewCrop /></ProtectedRoute>} />
+          <Route path="/farmer/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+          <Route path="/farmer/bookings" element={<ProtectedRoute><FarmerBooking /></ProtectedRoute>} />
+          <Route path="/farmer/settings" element={<ProtectedRoute><Setting /></ProtectedRoute>} />
+          <Route path="/buyer/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/buyer/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
+          <Route path="/buyer/marketplace/:id" element={<ProtectedRoute><Postetails /></ProtectedRoute>} />
+          <Route path="/buyer/bookings" element={<ProtectedRoute><Booking /></ProtectedRoute>} />
+          <Route path="/buyer/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
+          <Route path="/buyer/orders" element={<ProtectedRoute><BuyerOrders /></ProtectedRoute>} />
+          <Route path="/buyer/payment" element={<ProtectedRoute><BuyerPayment /></ProtectedRoute>} />
+          <Route path="/buyer/payment/checkout" element={<ProtectedRoute><PaymentForm /></ProtectedRoute>} />
+          <Route path="/buyer/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
+          <Route path="/buyer/payment/failure" element={<ProtectedRoute><PaymentFailure /></ProtectedRoute>} />
+          <Route path="/buyer/settings" element={<ProtectedRoute><BuyerSetting /></ProtectedRoute>} />
+          <Route path="/cart" element={<ProtectedRoute><BuyerPayment /></ProtectedRoute>} />
+          <Route path="/checkout" element={<ProtectedRoute><PaymentForm /></ProtectedRoute>} />
 
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/users" element={<AdminUserManagement />} />
-          <Route path="/admin/posts" element={<AdminPostApproval />} />
-          <Route path="/admin/bookings" element={<AdminBooking />} />
-          <Route path="/admin/orders" element={<AdminOrder />} />
-          <Route path="/admin/payments" element={<AdminPayment />} />
-          <Route path="/admin/log" element={<AdminLog />} />
-          <Route path="/admin/settings" element={<AdminSetting />} />
+          <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/users" element={<ProtectedRoute><AdminUserManagement /></ProtectedRoute>} />
+          <Route path="/admin/posts" element={<ProtectedRoute><AdminPostApproval /></ProtectedRoute>} />
+          <Route path="/admin/bookings" element={<ProtectedRoute><AdminBooking /></ProtectedRoute>} />
+          <Route path="/admin/orders" element={<ProtectedRoute><AdminOrder /></ProtectedRoute>} />
+          <Route path="/admin/payments" element={<ProtectedRoute><AdminPayment /></ProtectedRoute>} />
+          <Route path="/admin/log" element={<ProtectedRoute><AdminLog /></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<ProtectedRoute><AdminSetting /></ProtectedRoute>} />
         </Routes>
         <PwaInstallPrompt />
         <ChatbotWidget />
