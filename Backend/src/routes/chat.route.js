@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const router = Router();
+const Chatrouter = Router();
 const sessions = new Map();
 let quotaBlockedUntil = 0;
 
@@ -130,4 +130,4 @@ router.post("/chat", async (req, res) => {
   }
 });
 
-export default router;
+export default Chatrouter;

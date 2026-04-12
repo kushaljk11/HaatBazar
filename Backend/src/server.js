@@ -13,7 +13,7 @@ import paymentGatewayRouter from "./routes/paymentGateway.route.js";
 import adminRouter from "./routes/admin.route.js";
 import notificationRouter from "./routes/notification.route.js";
 import imageRouter from "./routes/image.route.js";
-import chatRouter from "./routes/chat.route.js";
+import Chatrouter from "./routes/chat.route.js";
 import { initSocket } from "./lib/socket.js";
 
 dotenv.config();
@@ -84,7 +84,7 @@ app.use("/api/payment", paymentGatewayRouter);
 app.use("/api", adminRouter);
 app.use("/api", notificationRouter);
 app.use("/api/image", imageRouter);
-app.use("/api", chatRouter);
+app.use("/api", Chatrouter);
 
 initSocket(httpServer);
 
