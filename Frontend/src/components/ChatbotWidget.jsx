@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Bot, MessageCircle, Send, X } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "/api" : "");
 
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,6 +14,17 @@ export default function ChatbotWidget() {
 
   const onSend = async () => {
     if (!text.trim() || loading) return;
+
+    if (!API_BASE) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "bot",
+          text: "API base URL is not configured. Set VITE_API_BASE_URL in frontend environment.",
+        },
+      ]);
+      return;
+    }
 
     const input = text.trim();
     setText("");

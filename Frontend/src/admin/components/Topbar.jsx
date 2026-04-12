@@ -1,6 +1,7 @@
 import { LayoutGrid, Menu, Search, ShieldCheck, ShoppingCart, UserCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NotificationBell from "../../components/NotificationBell";
+import UserMenu from "../../components/UserMenu";
 
 export default function AdminTopbar() {
   const navigate = useNavigate();
@@ -28,14 +29,7 @@ export default function AdminTopbar() {
 
         <div className="ml-auto flex items-center gap-2 md:gap-3">
           <NotificationBell />
-          <button
-            type="button"
-            onClick={() => navigate("/profile")}
-            className="grid h-9 w-9 place-items-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-800"
-            aria-label="Admin profile"
-          >
-            AD
-          </button>
+          <UserMenu />
         </div>
       </div>
 
