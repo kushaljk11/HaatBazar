@@ -3,6 +3,7 @@ import api from "../../utils/axios";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -55,6 +56,50 @@ export default function Login() {
       );
     }
   };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const credential = credentialResponse?.credential;
+
+      if (!credential) {
+        toast.error("Google login failed");
+        return;
+      }
+
+      const response = await api.post("/auth/google", { credential });
+
+      const user = response?.data?.user;
+      const token = response?.data?.token;
+
+      if (user && token) {
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("token", token);
+      }
+
+      toast.success("Google login successful! Redirecting...");
+
+      setTimeout(() => {
+        if (user?.role === "admin") {
+          navigate("/admin/dashboard");
+        } else if (user?.role === "buyer") {
+          navigate("/buyer/dashboard");
+        } else {
+          navigate("/farmer/dashboard");
+        }
+      }, 1200);
+    } catch (error) {
+      toast.error(
+        error.response && error.response.data
+          ? error.response.data.message || "Google login failed"
+          : "Google login failed",
+      );
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast.error("Google login cancelled or failed");
+  };
+
   return (
     <main className="min-h-screen bg-stone-100 md:grid md:h-screen md:grid-cols-2 md:overflow-hidden">
       <section className="relative hidden h-screen md:block">
@@ -87,13 +132,17 @@ export default function Login() {
             </p>
 
             <div className="mt-8 grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                className="flex items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-3 py-2.5 text-sm font-semibold text-stone-700 transition hover:bg-stone-50"
-              >
-                <span className="text-base text-red-500">G</span>
-                Google
-              </button>
+              <div className="flex items-center justify-center rounded-full border border-stone-300 bg-white px-2 py-1.5">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  shape="pill"
+                  theme="outline"
+                  text="continue_with"
+                  size="medium"
+                  width="100%"
+                />
+              </div>
 
               <button
                 type="button"

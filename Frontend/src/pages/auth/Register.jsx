@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import registerImg from "../../assets/register.jpg";
 import api from "../../utils/axios";
 
 export default function Register() {
+  const navigate = useNavigate();
   const [accountType, setAccountType] = useState("farmer");
   const [formData, setFormData] = useState({
     name: "",
@@ -89,6 +92,54 @@ export default function Register() {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const credential = credentialResponse?.credential;
+
+      if (!credential) {
+        setErrorMessage("Google registration failed. Please try again.");
+        return;
+      }
+
+      const response = await api.post("/auth/google", {
+        credential,
+        role: accountType,
+      });
+
+      const user = response?.data?.user;
+      const token = response?.data?.token;
+
+      if (user && token) {
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("token", token);
+      }
+
+      setSuccessMessage("Google registration successful! Redirecting...");
+      setErrorMessage("");
+
+      setTimeout(() => {
+        if (user?.role === "admin") {
+          navigate("/admin/dashboard");
+        } else if (user?.role === "buyer") {
+          navigate("/buyer/dashboard");
+        } else {
+          navigate("/farmer/dashboard");
+        }
+      }, 1200);
+    } catch (error) {
+      setSuccessMessage("");
+      setErrorMessage(
+        error.response?.data?.message ||
+          "Google registration failed. Please try again.",
+      );
+    }
+  };
+
+  const handleGoogleError = () => {
+    setSuccessMessage("");
+    setErrorMessage("Google registration cancelled or failed.");
+  };
+
   return (
     <main className="min-h-screen bg-stone-100 md:grid md:grid-cols-2">
       <section className="relative hidden h-screen md:block">
@@ -143,6 +194,26 @@ export default function Register() {
               >
                 Register as Buyer
               </button>
+            </div>
+
+            <div className="mt-3 rounded-2xl border border-stone-200 bg-white px-2 py-1.5">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                shape="pill"
+                theme="outline"
+                text="continue_with"
+                size="medium"
+                width="100%"
+              />
+            </div>
+
+            <div className="mt-3 flex items-center gap-3">
+              <div className="h-px flex-1 bg-stone-200" />
+              <p className="text-[11px] font-semibold text-stone-600">
+                Or continue with form
+              </p>
+              <div className="h-px flex-1 bg-stone-200" />
             </div>
 
             <form className="mt-3 space-y-2.5" onSubmit={handleSubmit}>
