@@ -47,6 +47,12 @@ export default function PaymentSuccess() {
     verify();
   }, [productId, pidx]);
 
+  useEffect(() => {
+    if (!isLoading && productId) {
+      sessionStorage.removeItem("current_transaction_id");
+    }
+  }, [isLoading, productId]);
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50">

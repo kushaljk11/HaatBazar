@@ -37,6 +37,12 @@ export default function PaymentFailure() {
     markFailed();
   }, [productId]);
 
+  useEffect(() => {
+    if (productId) {
+      sessionStorage.removeItem("current_transaction_id");
+    }
+  }, [productId]);
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 px-4 text-center">
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
