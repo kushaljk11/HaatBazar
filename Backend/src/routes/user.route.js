@@ -1,5 +1,5 @@
 import User from "../model/user.model.js";
-import { registerUser, login, getAllUsers, getUserById, updateUser, deleteUser, countUsers, changePassword} from "../controller/user.controller.js";
+import { registerUser, login, googleLogin, getAllUsers, getUserById, updateUser, deleteUser, countUsers, changePassword} from "../controller/user.controller.js";
 import { authMiddleware, adminonly, adminOrSelf } from "../middleware/authMiddleware.js";
 import express from "express";
 
@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", login);
+router.post("/auth/google", googleLogin);
 router.get("/users", authMiddleware, adminonly, getAllUsers);
 router.get("/user/count", authMiddleware, adminonly, countUsers);
 router.get("/user/:id", authMiddleware, adminOrSelf, getUserById);

@@ -2,8 +2,12 @@ import User from "../model/user.model.js";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
 
 dotenv.config();
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // yedi jwt xaina vaney error falidine
 if (!process.env.JWT_SECRET) {
@@ -138,6 +142,73 @@ export const login = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+export const googleLogin = async (req, res) => {
+  try {
+    const { credential, role } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({ message: "Google credential is required" });
+    }
+
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      return res.status(500).json({ message: "GOOGLE_CLIENT_ID is not configured" });
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    if (!payload?.email || !payload?.email_verified) {
+      return res.status(400).json({ message: "Invalid Google account" });
+    }
+
+    let user = await User.findOne({ email: payload.email });
+
+    if (!user) {
+      const generatedPassword = crypto.randomBytes(24).toString("hex");
+      const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+      const normalizedRole = ["buyer", "farmer"].includes(String(role))
+        ? String(role)
+        : "buyer";
+
+      user = new User({
+        name: payload.name || "Google User",
+        email: payload.email,
+        password: hashedPassword,
+        role: normalizedRole,
+        profilePicture: payload.picture || "",
+      });
+    }
+
+    user.lastLogin = Date.now();
+    await user.save();
+
+    const token = generateToken(user);
+
+    return res.status(200).json({
+      message: "Google login successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        location: user.location,
+        profilePicture: user.profilePicture,
+      },
+      token,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Google login failed",
+      error: error.message,
+    });
   }
 };
 
