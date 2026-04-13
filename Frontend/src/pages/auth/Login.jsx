@@ -1,41 +1,17 @@
 import login from "../../assets/login.jpg";
 import api from "../../utils/axios";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { GoogleLogin } from "@react-oauth/google";
+import { useGoogleLogin } from "@react-oauth/google";
 
 export default function Login() {
   const navigate = useNavigate();
-  const googleButtonRef = useRef(null);
-  const [googleButtonWidth, setGoogleButtonWidth] = useState(240);
   const [success, setSuccess] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-
-  useEffect(() => {
-    const element = googleButtonRef.current;
-    if (!element) return;
-
-    const updateWidth = () => {
-      const nextWidth = Math.floor(element.getBoundingClientRect().width);
-      setGoogleButtonWidth(Math.max(120, nextWidth));
-    };
-
-    updateWidth();
-
-    if (typeof ResizeObserver === "undefined") {
-      window.addEventListener("resize", updateWidth);
-      return () => window.removeEventListener("resize", updateWidth);
-    }
-
-    const observer = new ResizeObserver(updateWidth);
-    observer.observe(element);
-
-    return () => observer.disconnect();
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -81,16 +57,16 @@ export default function Login() {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
+  const handleGoogleSuccess = async (tokenResponse) => {
     try {
-      const credential = credentialResponse?.credential;
+      const accessToken = tokenResponse?.access_token;
 
-      if (!credential) {
+      if (!accessToken) {
         toast.error("Google login failed");
         return;
       }
 
-      const response = await api.post("/auth/google", { credential });
+      const response = await api.post("/auth/google", { accessToken });
 
       const user = response?.data?.user;
       const token = response?.data?.token;
@@ -124,6 +100,12 @@ export default function Login() {
     toast.error("Google login cancelled or failed");
   };
 
+  const startGoogleLogin = useGoogleLogin({
+    scope: "openid email profile",
+    onSuccess: handleGoogleSuccess,
+    onError: handleGoogleError,
+  });
+
   return (
     <main className="min-h-screen bg-stone-100 md:grid md:h-screen md:grid-cols-2 md:overflow-hidden">
       <section className="relative hidden h-screen md:block">
@@ -156,12 +138,10 @@ export default function Login() {
             </p>
 
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              <div
-                ref={googleButtonRef}
-                className="relative h-10 overflow-hidden rounded-full border border-stone-300 bg-white"
-              >
+              <div className="h-10 overflow-hidden rounded-full border border-stone-300 bg-white">
                 <button
                   type="button"
+                  onClick={() => startGoogleLogin()}
                   className="flex h-full w-full items-center justify-center gap-2 px-3 text-sm font-semibold text-stone-700"
                 >
                   <svg
@@ -177,19 +157,6 @@ export default function Login() {
                   </svg>
                   Google
                 </button>
-
-                <div className="absolute inset-0 opacity-0">
-                  <GoogleLogin
-                    onSuccess={handleGoogleSuccess}
-                    onError={handleGoogleError}
-                    locale="en"
-                    shape="pill"
-                    theme="outline"
-                    text="continue_with"
-                    size="medium"
-                    width={googleButtonWidth}
-                  />
-                </div>
               </div>
 
               <button

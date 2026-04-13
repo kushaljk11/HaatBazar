@@ -1,14 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { GoogleLogin } from "@react-oauth/google";
+import { useGoogleLogin } from "@react-oauth/google";
 import registerImg from "../../assets/register.jpg";
 import api from "../../utils/axios";
 
 export default function Register() {
   const navigate = useNavigate();
-  const googleButtonRef = useRef(null);
-  const [googleButtonWidth, setGoogleButtonWidth] = useState(240);
   const [accountType, setAccountType] = useState("farmer");
   const [formData, setFormData] = useState({
     name: "",
@@ -23,28 +21,6 @@ export default function Register() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
-  useEffect(() => {
-    const element = googleButtonRef.current;
-    if (!element) return;
-
-    const updateWidth = () => {
-      const nextWidth = Math.floor(element.getBoundingClientRect().width);
-      setGoogleButtonWidth(Math.max(120, nextWidth));
-    };
-
-    updateWidth();
-
-    if (typeof ResizeObserver === "undefined") {
-      window.addEventListener("resize", updateWidth);
-      return () => window.removeEventListener("resize", updateWidth);
-    }
-
-    const observer = new ResizeObserver(updateWidth);
-    observer.observe(element);
-
-    return () => observer.disconnect();
-  }, []);
 
   const handleAccountTypeChange = (type) => {
     setAccountType(type);
@@ -116,17 +92,17 @@ export default function Register() {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
+  const handleGoogleSuccess = async (tokenResponse) => {
     try {
-      const credential = credentialResponse?.credential;
+      const accessToken = tokenResponse?.access_token;
 
-      if (!credential) {
+      if (!accessToken) {
         setErrorMessage("Google registration failed. Please try again.");
         return;
       }
 
       const response = await api.post("/auth/google", {
-        credential,
+        accessToken,
         role: accountType,
       });
 
@@ -163,6 +139,12 @@ export default function Register() {
     setSuccessMessage("");
     setErrorMessage("Google registration cancelled or failed.");
   };
+
+  const startGoogleLogin = useGoogleLogin({
+    scope: "openid email profile",
+    onSuccess: handleGoogleSuccess,
+    onError: handleGoogleError,
+  });
 
   return (
     <main className="min-h-screen bg-stone-100 md:grid md:grid-cols-2">
@@ -220,12 +202,10 @@ export default function Register() {
               </button>
             </div>
 
-            <div
-              ref={googleButtonRef}
-              className="relative mt-3 h-10 overflow-hidden rounded-full border border-stone-300 bg-white"
-            >
+            <div className="mt-3 h-10 overflow-hidden rounded-full border border-stone-300 bg-white">
               <button
                 type="button"
+                onClick={() => startGoogleLogin()}
                 className="flex h-full w-full items-center justify-center gap-2 px-3 text-sm font-semibold text-stone-700"
               >
                 <svg
@@ -241,19 +221,6 @@ export default function Register() {
                 </svg>
                 Google
               </button>
-
-              <div className="absolute inset-0 opacity-0">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={handleGoogleError}
-                  locale="en"
-                  shape="pill"
-                  theme="outline"
-                  text="continue_with"
-                  size="medium"
-                  width={googleButtonWidth}
-                />
-              </div>
             </div>
 
             <div className="mt-3 flex items-center gap-3">
