@@ -89,8 +89,8 @@ export default function Landing() {
 
   const trustStats = [
     { label: "Local Farms", value: "300+" },
-    { label: "Daily Deliveries", value: "1.2K" },
-    { label: "Avg. Fulfillment", value: "98%" },
+    { label: "Daily Deliveries", value: "1.2K+" },
+    { label: "Trust & Satisfaction", value: "98%" },
   ];
 
   const featured = [
@@ -144,13 +144,11 @@ export default function Landing() {
             <div ref={heroContentRef} className="w-full lg:w-[34%]">
               <h1 className="text-5xl font-semibold leading-[1.03] tracking-tight text-slate-900 sm:text-5xl">
                 Smart <span className="text-emerald-800">Agriculture</span>,
-                <span className="block mt-2 font-normal">For the Future.</span>
+                <span className="block mt-2 font-normal">Built for the Future.</span>
               </h1>
 
               <p className="mt-7 max-w-[420px] text-[15px] leading-7 text-slate-700">
-                Monitor crop supply, verify farmer listings, and buy with
-                confidence through a transparent marketplace built for modern
-                food distribution in Nepal.
+                Connect with verified farmers, track supply, and trade with confidence through a transparent marketplace designed for modern food distribution in Nepal.
               </p>
 
               <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -158,13 +156,13 @@ export default function Landing() {
                   to="/register"
                   className="rounded-full bg-emerald-800 text-white px-6 py-2.5 text-sm font-semibold transition hover:bg-emerald-700"
                 >
-                  Register Now
+                  Get Started
                 </Link>
                 <Link
                   to="/marketplace"
                   className="rounded-full border border-slate-400 bg-transparent px-6 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-white"
                 >
-                  View Marketplace
+                  Explore Marketplace
                 </Link>
               </div>
 

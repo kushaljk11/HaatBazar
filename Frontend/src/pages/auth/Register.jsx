@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
 import registerImg from "../../assets/register.jpg";
 import api from "../../utils/axios";
+import CityAutocomplete from "../../components/CityAutocomplete";
+import { getAllCities } from "../../utils/locationUtils";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ export default function Register() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const cityOptions = useMemo(() => getAllCities(), []);
 
   const handleAccountTypeChange = (type) => {
     setAccountType(type);
@@ -307,20 +310,16 @@ export default function Register() {
                   <label className="text-[11px] font-semibold uppercase tracking-wider text-stone-600">
                     District Location
                   </label>
-                  <div className="mt-1 rounded-2xl bg-stone-100 px-3.5 py-2">
-                    <select
-                      name="location"
-                      value={formData.location}
-                      onChange={handleChange}
-                      className="w-full appearance-none bg-transparent text-sm text-stone-700 outline-none"
-                      required
-                    >
-                      <option value="">Select District</option>
-                      <option value="Kathmandu">Kathmandu</option>
-                      <option value="Lalitpur">Lalitpur</option>
-                      <option value="Bhaktapur">Bhaktapur</option>
-                    </select>
-                  </div>
+                  <CityAutocomplete
+                    value={formData.location}
+                    onChange={(value) =>
+                      setFormData((prev) => ({ ...prev, location: value }))
+                    }
+                    options={cityOptions}
+                    placeholder="Select city"
+                    containerClassName="mt-1"
+                    inputClassName="w-full rounded-2xl bg-stone-100 px-3.5 py-2 text-sm text-stone-700 outline-none placeholder:text-stone-400"
+                  />
                 </div>
               </div>
 
