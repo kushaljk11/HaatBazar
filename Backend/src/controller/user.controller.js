@@ -147,22 +147,44 @@ export const login = async (req, res) => {
 
 export const googleLogin = async (req, res) => {
   try {
-    const { credential, role } = req.body;
+    const { credential, accessToken, role } = req.body;
 
-    if (!credential) {
-      return res.status(400).json({ message: "Google credential is required" });
+    if (!credential && !accessToken) {
+      return res.status(400).json({ message: "Google credential or access token is required" });
     }
 
-    if (!process.env.GOOGLE_CLIENT_ID) {
-      return res.status(500).json({ message: "GOOGLE_CLIENT_ID is not configured" });
+    let payload;
+
+    if (credential) {
+      if (!process.env.GOOGLE_CLIENT_ID) {
+        return res.status(500).json({ message: "GOOGLE_CLIENT_ID is not configured" });
+      }
+
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+      payload = ticket.getPayload();
+    } else {
+      const userInfoResponse = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!userInfoResponse.ok) {
+        return res.status(400).json({ message: "Invalid Google access token" });
+      }
+
+      const userInfo = await userInfoResponse.json();
+      payload = {
+        email: userInfo.email,
+        email_verified: userInfo.email_verified === true || userInfo.email_verified === "true",
+        name: userInfo.name,
+        picture: userInfo.picture,
+      };
     }
-
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-
-    const payload = ticket.getPayload();
 
     if (!payload?.email || !payload?.email_verified) {
       return res.status(400).json({ message: "Invalid Google account" });
